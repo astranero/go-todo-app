@@ -8,11 +8,11 @@ import (
 )
 
 func main(){
-	randomString := uuid.New().String()
 	log.Println("Application Started")
 
 	ticker := time.NewTicker(5 * time.Second)
 	for t := range ticker.C {
+		randomString := uuid.New().String()
 		fmt.Printf("%s: %s\n", t.Format(time.RFC3339), randomString)
 	}
 }

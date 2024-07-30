@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logoutput
+  namespace: logoutput
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logoutput
+  template:
+    metadata:
+      labels:
+        app: logoutput
+    spec:
+      containers:
+      - name: logoutput-reader
+        image: astranero/logoutput-reader:2.01
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+      - name: pingpong
+        image: astranero/pingpong:2.02
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081

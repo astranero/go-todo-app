@@ -15,11 +15,10 @@ spec:
     spec:
       containers:
       - name: todo
-        image: astranero/todo:v.03
+        image: astranero/todo:v.04
         imagePullPolicy: Always
         ports:
-        - name: http
-          containerPort: 8080
+        - containerPort: 8080
         env:
         - name: PORT
           value: "8080"

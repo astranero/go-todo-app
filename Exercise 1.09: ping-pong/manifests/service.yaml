@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: pong-svc
+  namespace: logoutput
+spec:
+  selector:
+    app:  pong
+  type:  ClusterIP
+  ports:
+  - port: 8080
+    targetPort:  8080

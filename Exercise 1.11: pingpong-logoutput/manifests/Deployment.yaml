@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logoutput
+  namespace: logoutput
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logoutput
+  template:
+    metadata:
+      labels:
+        app: logoutput
+    spec:
+      containers:
+      - name: logoutput-reader
+        image: astranero/logoutput-reader:v.10
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - name: shared
+            mountPath: /usr/src/shared/files
+      - name: logoutput-writer
+        image: astranero/logoutput-writer:v.10
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: shared
+            mountPath: /usr/src/shared/files
+      - name: pingpong
+        image: astranero/logoutput-pingpong:v.06
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+          - name: shared
+            mountPath: /usr/src/shared/files
+      volumes:
+        - name: shared
+          persistentVolumeClaim:
+            claimName: logoutput-pvc
