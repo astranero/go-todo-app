@@ -46,23 +46,23 @@ jobs:
     - name: Build Backend Docker image
       run: |-
         docker build \
-          --tag "gcr.io/${{ secrets.PROJECT_ID }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" \
+          --tag "gcr.io/${{ env.GCP_PROJECT }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" \
           "./Project v.1.4/${{ env.BACKEND_IMAGE }}"
 
     - name: Build Frontend Docker image
       run: |-
         docker build \
-          --tag "gcr.io/${{ secrets.PROJECT_ID }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" \
+          --tag "gcr.io/${{ env.GCP_PROJECT }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" \
           "./Project v.1.4/${{ env.FRONTEND_IMAGE }}"
   
     # Push the Docker images to Google Container Registry
     - name: Publish Backend Docker image
       run: |-
-        docker push "gcr.io/${{ secrets.PROJECT_ID }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
+        docker push "gcr.io/${{ env.GCP_PROJECT }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
 
     - name: Publish Frontend Docker image
       run: |-
-        docker push "gcr.io/${{ secrets.PROJECT_ID }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}"
+        docker push "gcr.io/${{ env.GCP_PROJECT }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}"
       
     - name: Install Kustomize
       run: |-
@@ -75,8 +75,8 @@ jobs:
         cp -r "./Project v.1.4/manifests/." kustomize-temp/
         cd kustomize-temp
 
-        ../kustomize edit set image ${{ env.FRONTEND_IMAGE }}="gcr.io/${{ secrets.PROJECT_ID }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
-        ../kustomize edit set image ${{ env.BACKEND_IMAGE }}="gcr.io/${{ secrets.PROJECT_ID }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
+        ../kustomize edit set image ${{ env.FRONTEND_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
+        ../kustomize edit set image ${{ env.BACKEND_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
 
         ../kustomize build . | kubectl apply -f -
         
