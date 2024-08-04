@@ -75,10 +75,10 @@ jobs:
         cp -r "./Project v.1.4/manifests/." kustomize-temp/
         cd kustomize-temp
 
-        ../kustomize edit set image ${{ env.FRONTEND_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
-        ../kustomize edit set image ${{ env.BACKEND_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
+        kustomize edit set image ${{ env.FRONTEND_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
+        kustomize edit set image ${{ env.BACKEND_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
 
-        ../kustomize build . | kubectl apply -f -
+        kustomize build . | kubectl apply -f -
         
         kubectl rollout status deployment/${{ env.FRONTEND_SERVICE }}
         kubectl rollout status deployment/${{ env.BACKEND_SERVICE }}
