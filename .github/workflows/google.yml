@@ -2,7 +2,6 @@ name: Build and Deploy to GKE
 
 on:
   push:
-    branches: [ "main" ]
 
 env:
   FRONTEND_IMAGE: todo_app
@@ -74,6 +73,14 @@ jobs:
         mkdir kustomize-temp
         cp -r "./Project v.1.4/manifests/." kustomize-temp/
         cd kustomize-temp
+        
+        NAMESPACE=todo-${GITHUB_REF#refs/heads/}
+        if [ "$NAMESPACE" == "main" ]; then
+          NAMESPACE=todo-default
+        fi
+        kubectl create namespace $NAMESPACE || true
+        kubectl config set-context --current --namespace=$NAMESPACE
+        kustomize edit set namespace $NAMESPACE
 
         kustomize edit set image ${{ env.FRONTEND_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
         kustomize edit set image ${{ env.BACKEND_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
@@ -85,4 +92,49 @@ jobs:
         
         # Get the services information
         kubectl get services -o wide
+---
+name: Delete branch
 
+on:
+  delete:
+    branches:
+    - "*"
+
+jobs:
+  delete-environment:
+    name: Delete env
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - id: "auth"
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GKE_SA_KEY }}
+      
+    - name: 'Set up Cloud SDK'
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: 'Use gcloud CLI'
+      run: gcloud info
+
+    - name: Docker configuration
+      run: gcloud --quiet auth configure-docker
+      
+    - name: Set up GKE credentials
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: ${{ secrets.GKE_CLUSTER }}
+        location: ${{ secrets.GKE_ZONE }}
+        project_id: ${{ secrets.PROJECT_ID }}
+
+    - name: Delete namespace
+      run: |-
+        NAMESPACE=${GITHUB_REF#refs/heads/}
+        if [ "$NAMESPACE" != "main" ]; then
+          kubectl delete namespace $NAMESPACE
+        fi
+    
