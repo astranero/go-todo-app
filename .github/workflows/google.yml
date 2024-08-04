@@ -2,6 +2,11 @@ name: Build and Deploy to GKE
 
 on:
   push:
+    branches:
+    - "*"
+  delete: 
+    branches:
+    - "*"
 
 env:
   FRONTEND_IMAGE: todo_app
@@ -13,6 +18,7 @@ env:
 jobs:
   build-publish-deploy:
     name: Build, Publish and Deploy
+    if: github.event_name == "push"
     runs-on: ubuntu-latest
     environment: production
 
@@ -93,16 +99,9 @@ jobs:
         # Get the services information
         kubectl get services -o wide
 
-name: Delete branch
-
-on:
-  delete:
-    branches:
-    - "*"
-
-jobs:
   delete-environment:
     name: Delete env
+    if: github.event_name == "delete"
     runs-on: ubuntu-latest
     environment: production
 
