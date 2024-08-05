@@ -14,8 +14,8 @@ spec:
         app: todo
     spec:
       containers:
-      - name: todo
-        image: todo_app
+      - name: todo-app
+        image: todo-app
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -33,7 +33,7 @@ spec:
           - name: persistent
             mountPath: /usr/src/shared/files
       - name: todo-backend
-        image: todo_backend
+        image: todo_´-backend
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
@@ -46,7 +46,7 @@ spec:
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: todo-postgres-secret
               key: DATABASE_URL
       volumes:
       - name: persistent
