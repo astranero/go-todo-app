@@ -14,7 +14,7 @@ spec:
         app: todo
     spec:
       containers:
-      - name: todo
+      - name: todo_app
         image: todo_app
         imagePullPolicy: Always
         ports:
@@ -29,7 +29,7 @@ spec:
         volumeMounts:
           - name: persistent
             mountPath: /usr/src/shared/files
-      - name: todo-backend
+      - name: todo_backend
         image: todo_backend
         imagePullPolicy: Always
         ports:
