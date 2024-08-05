@@ -19,6 +19,9 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
+        resources:
+          cpu: "150m"
+          memory: "200Mi"
         env:
           - name: MESSAGE
             valueFrom:
@@ -33,11 +36,15 @@ spec:
         volumeMounts:
           - name:  config
             mountPath:  "/config"
+        
       - name: pingpong
         image: astranero/pingpong:2.07.03
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
+        resources:
+          cpu: "150m"
+          memory: "200Mi"
         env:
           - name: DATABASE_URL
             valueFrom:

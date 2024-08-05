@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: todo
+  namespace: todo
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: todo
+        spec:
+          containers:
+          - name: todo-job
+            image: ubuntu:latest
+            command:
+            - /bin/sh
+            - -c
+            - curl -X POST "$todo_url" -H "Content-Type: text/plain" -d "READ https://en.wikipedia.org/wiki/Special:Random"
+            env:
+            - name: todo_url
+              value: "http://todo-svc.todo.local.cluster.svc:8080/todos"
+          restartPolicy: OnFailure

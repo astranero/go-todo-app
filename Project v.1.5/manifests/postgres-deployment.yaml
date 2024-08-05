@@ -32,7 +32,7 @@ spec:
       labels:
         app: postgres
     spec:
-      storageClassName: local-path
+      storageClassName: standard-rwo
       accessModes:
         - ReadWriteOnce
       resources:
