@@ -11,7 +11,7 @@ resources:
 - secret.yaml
 - service.yaml
 images:
-  - name: todo_app
+  - name: todo-app
     newName:
-  - name: todo_backend
+  - name: todo-backend
     newName: 
