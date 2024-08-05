@@ -5,7 +5,7 @@ resources:
 - Deployment.yaml
 - ingress.yaml
 - persistentvolumeclaim.yaml
-- postgres-deployment.yaml
+- postgres-statefulset.yaml
 - postgres-secret.yaml
 - postgres-service.yaml
 - secret.yaml
