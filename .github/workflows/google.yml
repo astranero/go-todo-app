@@ -52,13 +52,13 @@ jobs:
       run: |-
         docker build \
           --tag "gcr.io/${{ env.GCP_PROJECT }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" \
-          "./Project v.1.4/${{ env.BACKEND_IMAGE }}"
+          "./todo-project/${{ env.BACKEND_IMAGE }}"
 
     - name: Build Frontend Docker image
       run: |-
         docker build \
           --tag "gcr.io/${{ env.GCP_PROJECT }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" \
-          "./Project v.1.4/${{ env.FRONTEND_IMAGE }}"
+          "./todo-project/${{ env.FRONTEND_IMAGE }}"
   
     # Push the Docker images to Google Container Registry
     - name: Publish Backend Docker image
