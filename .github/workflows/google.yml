@@ -77,7 +77,7 @@ jobs:
     - name: Deploy
       run: |-
         mkdir kustomize-temp
-        cp -r "./Project v.1.4/manifests/." kustomize-temp/
+        cp -r "./todo-project/manifests/." kustomize-temp/
         cd kustomize-temp
         
         NAMESPACE=todo-${GITHUB_REF#refs/heads/}
