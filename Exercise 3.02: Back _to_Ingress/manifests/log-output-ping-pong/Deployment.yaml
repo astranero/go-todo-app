@@ -20,8 +20,9 @@ spec:
         ports:
         - containerPort: 8080
         resources:
-          cpu: "150m"
-          memory: "200Mi"
+          limits:
+            cpu: "150m"
+            memory: "200Mi"
         env:
           - name: MESSAGE
             valueFrom:
@@ -42,8 +43,9 @@ spec:
         ports:
         - containerPort: 8081
         resources:
-          cpu: "150m"
-          memory: "200Mi"
+          limits:
+            cpu: "150m"
+            memory: "200Mi"
         env:
           - name: DATABASE_URL
             valueFrom:
