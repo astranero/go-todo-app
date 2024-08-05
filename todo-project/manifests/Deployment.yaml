@@ -34,7 +34,7 @@ spec:
           - name: persistent
             mountPath: /usr/src/shared/files
       - name: todo-backend
-        image: todo_´-backend
+        image: todo-backend
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
