@@ -12,6 +12,8 @@ resources:
 - service.yaml
 images:
   - name: todo-app
-    newName:
+    newName: gcr.io/gke-dwe/todo-app
+    newTag: "latest"
   - name: todo-backend
-    newName: 
+    newName: gcr.iogke-dwe/todo-backend
+    newTag: "latest"
