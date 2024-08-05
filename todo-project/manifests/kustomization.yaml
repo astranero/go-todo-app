@@ -15,5 +15,5 @@ images:
     newName: gcr.io/gke-dwe/todo-app
     newTag: "latest"
   - name: todo-backend
-    newName: gcr.iogke-dwe/todo-backend
+    newName: gcr.io/gke-dwe/todo-backend
     newTag: "latest"
