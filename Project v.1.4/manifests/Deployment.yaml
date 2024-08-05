@@ -14,8 +14,8 @@ spec:
         app: todo
     spec:
       containers:
-      - name: todo_app
-        image: todo_app
+      - name: todo-app
+        image: todo-app
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -29,8 +29,8 @@ spec:
         volumeMounts:
           - name: persistent
             mountPath: /usr/src/shared/files
-      - name: todo_backend
-        image: todo_backend
+      - name: todo-backend
+        image: todo_´-backend
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
