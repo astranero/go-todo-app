@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: todo-svc
+  name: todo-frontend
   namespace: todo
 spec:
   selector:
@@ -14,7 +14,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: todo-backend-svc
+  name: todo-backend
   namespace: todo
 spec:
   selector:

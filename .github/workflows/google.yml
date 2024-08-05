@@ -9,10 +9,10 @@ on:
     - "*"
 
 env:
-  FRONTEND_IMAGE: todo_app
-  FRONTEND_SERVICE: todo_app
-  BACKEND_IMAGE: todo_backend
-  BACKEND_SERVICE: todo_backend
+  FRONTEND_IMAGE: todo-app
+  FRONTEND_SERVICE: todo-app
+  BACKEND_IMAGE: todo-backend
+  BACKEND_SERVICE: todo-backend
   BRANCH: ${{ github.ref_name }}
   
 jobs:
