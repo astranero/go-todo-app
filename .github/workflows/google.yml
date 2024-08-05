@@ -93,8 +93,7 @@ jobs:
 
         kustomize build . | kubectl apply -f -
         
-        kubectl rollout status deployment/${{ env.FRONTEND_SERVICE }}
-        kubectl rollout status deployment/${{ env.BACKEND_SERVICE }}
+        kubectl rollout status deployment/todo
         
         # Get the services information
         kubectl get services -o wide
