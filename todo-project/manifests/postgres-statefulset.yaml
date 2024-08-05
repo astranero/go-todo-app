@@ -32,7 +32,6 @@ spec:
       labels:
         app: postgres
     spec:
-      storageClassName: standard-rwo
       accessModes:
         - ReadWriteOnce
       resources:

@@ -4,7 +4,6 @@ metadata:
   name: todo-pvc
   namespace: todo
 spec:
-  storageClassName: standard-rwo
   accessModes:
     - ReadWriteOnce
   resources:
