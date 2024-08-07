@@ -11,8 +11,7 @@ spec:
           containers:
           - name: backup
             image: ubuntu:latest
-            commands: |-
-              /bin/bash backup_pg_dump.sh
+            command: ["/bin/bash", "/tmp/backup_pg_dump.sh"]
             env:
             - name: DATABASE_URL
               valueFrom:
@@ -25,9 +24,10 @@ spec:
                   name: backup-secret
                   key: API_KEY
             volumeMounts:
-              - name:  backup-config
+              - name: backup-config
                 mountPath: /tmp/
                 subPath: backup_pg_dump.sh
+          restartPolicy: OnFailure
         volumes:
         - name: backup-config
           configMap:
