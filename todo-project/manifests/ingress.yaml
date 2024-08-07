@@ -10,13 +10,13 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: todo-svc
+            name: todo-frontend
             port:
               number: 8080
       - path: /todos
         pathType: Prefix
         backend:
           service:
-            name: backend-todo-svc
+            name: todo-backend
             port:
               number: 8081
