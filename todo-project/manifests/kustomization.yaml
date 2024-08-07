@@ -10,3 +10,5 @@ resources:
 - postgres-service.yaml
 - secret.yaml
 - service.yaml
+- backup-configmap.yaml
+- backup.yaml 
