@@ -4,29 +4,31 @@ metadata:
   name: backup
 spec:
   schedule: "0 0 * * *"
-  template:
+  jobTemplate:
     spec:
-      containers:
-      - name: backup
-        image: ubuntu:latest
-        commands: |-
-          /bin/bash backup_pg_dump.sh
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: todo-postgres-secret
-              key: DATABASE_URL
-        - name: API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: backup-secret
-              key: API_KEY
-        volumeMounts:
-          - name:  backup-config
-            mountPath: /tmp/
-            subPath: backup_pg_dump.sh
-    volumes:
-    - name: backup-config
-      configMap:
-        name: backup-config
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: ubuntu:latest
+            commands: |-
+              /bin/bash backup_pg_dump.sh
+            env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: todo-postgres-secret
+                  key: DATABASE_URL
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backup-secret
+                  key: API_KEY
+            volumeMounts:
+              - name:  backup-config
+                mountPath: /tmp/
+                subPath: backup_pg_dump.sh
+        volumes:
+        - name: backup-config
+          configMap:
+            name: backup-config
