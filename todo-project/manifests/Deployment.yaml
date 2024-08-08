@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: todo-app
-        image: gcr.io/gke-dwe/todo-app
+        image: todo-app
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -35,7 +35,7 @@ spec:
           - name: persistent
             mountPath: /usr/src/shared/files
       - name: todo-backend
-        image: gcr.io/gke-dwe/todo-backend
+        image: todo-backend
         imagePullPolicy: Always
         ports:
         - containerPort: 8081
