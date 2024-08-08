@@ -53,7 +53,7 @@ func main() {
 		log.Fatalf("Failed to create todo table: %v", err)
 	}
 
-	http.HandleFunc("/todos", todosHandler)
+	http.HandleFunc("/", todosHandler)
 
 	log.Printf("Server started on port %s", port)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
