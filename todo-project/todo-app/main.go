@@ -100,7 +100,7 @@ func main() {
 	})
 
 	http.HandleFunc("/todos", func(w http.ResponseWriter, r *http.Request) {
-		requestURL := fmt.Sprintf("http://todo-backend:%s/todos", backendPort)
+		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
 		resp, err := http.Get(requestURL)
 		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
