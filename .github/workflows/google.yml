@@ -9,9 +9,9 @@ on:
     - "*"
 
 env:
-  FRONTEND_IMAGE: todo-app
+  FRONTEND_IMAGE: gcr.io/gke-dwe/todo-app
   FRONTEND_SERVICE: todo-app
-  BACKEND_IMAGE: todo-backend
+  BACKEND_IMAGE: gcr.io/gke-dwe/todo-backend
   BACKEND_SERVICE: todo-backend
   BRANCH: ${{ github.ref_name }}
   
