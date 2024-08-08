@@ -28,7 +28,7 @@ spec:
                 mountPath: /tmp/
                 subPath: backup_pg_dump.sh
           restartPolicy: OnFailure
-        volumes:
-        - name: backup-config
-          configMap:
-            name: backup-config
+          volumes:
+          - name: backup-config
+            configMap:
+              name: backup-config
