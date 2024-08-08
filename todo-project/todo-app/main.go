@@ -77,7 +77,7 @@ func main() {
 			return
 		}
 
-		requestURL := fmt.Sprintf("http://todo-backend:%s/todos", backendPort)
+		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
 		resp, err := http.Post(requestURL, "application/x-www-form-urlencoded", strings.NewReader(fmt.Sprintf("todo=%s", todo)))
 		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
