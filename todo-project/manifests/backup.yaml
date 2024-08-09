@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: backup # Metadata with name
 spec:
-  schedule: "23 24 * * *" # Correct cron schedule string
+  schedule: "23 10 * * *" # Correct cron schedule string
   jobTemplate:
     spec:
       template:
