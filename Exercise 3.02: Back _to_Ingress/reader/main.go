@@ -53,11 +53,21 @@ func main(){
 		}
 	}()
 
-	http.HandleFunc("/", homeHandler)
-	port := "8080"
-	log.Printf("Server started on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	go func(){ 
+		http.HandleFunc("/", homeHandler)
+		port := "8080"
+		log.Printf("Server started on port %s", port)
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}
+
+	go func(){
+		http.HandleFunc("/healthz", health)
+		port := "3541"
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
+			log.Fatalf("Failed to start healthz endpoint")
+		}
 	}
 }
 
@@ -108,4 +118,12 @@ func reader(filename string) (string, error) {
 	}
 
 	return lastLine, nil
+}
+
+func health(w http.ResponseWriter, r *http.Request){
+	err := db.Ping(); err != nil {
+		http.Error(w, "Failed to connect to database.", http.StatusInternalServerError)
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "OK")
 }

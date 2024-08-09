@@ -66,13 +66,25 @@ func main(){
 		log.Println("Successfully connected")
 	}
 
-	http.HandleFunc("/pingpong", pingHandler)
+	go func(){
+		http.HandleFunc("/pingpong", pingHandler)
 
-	port := "8081"
-	log.Printf("Server started on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		port := "8081"
+		log.Printf("Server started on port %s", port)
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
 	}
+
+	go func(){
+		http.HandleFunc("/healthz", health)
+		port := "3541"
+		if err:= http.ListenAndServe(":"+port, nil); err != nil {
+			log.Fatalf("Failed to start server:%v", err)
+		}
+	}
+
+	select{}
 }
 
 func pingHandler(w http.ResponseWriter, r *http.Request){
@@ -87,4 +99,15 @@ func pingHandler(w http.ResponseWriter, r *http.Request){
 	}
 
 	fmt.Fprintf(w,"New value for counter: %d\n", counter.Counter)
+}
+
+func health(w http.ResponseWriter, r *http.Request){
+	var err error
+	err = db.Ping()
+	if err != nil {
+		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w,"OK")
 }
