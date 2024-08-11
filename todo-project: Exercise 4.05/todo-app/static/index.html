@@ -28,7 +28,7 @@
                 todos.forEach(todo => {
                     const li = document.createElement('li');
                     li.textContent = todo.Todo;
-                    li.setAttribute('data-id', todo.id)
+                    li.setAttribute('data-id', todo.Id)
                     li.addEventListener("click", async function () {
                         await disableTodo(todo);
                     });
@@ -38,13 +38,13 @@
         }
 
         async function disableTodo(todo) {
-            const response = await fetch('/todos/${todo.id}', {
+            const response = await fetch('/todos/${todo.Id}', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    id: todo.id,
+                    id: todo.Id,
                     Todo: todo.Todo,
                     Done: true
                 })

@@ -18,10 +18,9 @@ var (
 )
 
 type Todo struct {
-	ID int `db:"id" json:"id"`,
-	Todo string `db:"todo" json:"todo"`,
-	Done bool `db:"done" json:"done"`
-
+	Id   int    `db:"id" json:"id"`
+	Todo string `db:"todo" json:"todo"`
+	Done bool   `db:"done" json:"done"`
 }
 
 func main() {
@@ -115,7 +114,12 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todoList = append(todoList, Todo{Todo: todo})
+	todoList = append(todoList, Todo{
+		id: todo.Id, 
+		Todo: todo.Todo, 
+		Done: false,
+		}
+	)
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(todoList); err != nil {
 		log.Printf("Failed to encode response.")
@@ -144,13 +148,13 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-	if todo == "" {
+	if todo.Todo == "" {
 		log.Printf("Todo cannot be empty.")
 		http.Error(w, "Todo cannot be empty", http.StatusBadRequest)
 		return
 	}
 
-	if len(todo) > 140 {
+	if len(todo.Todo) > 140 {
         log.Printf("Rejected: Todo exceeds 140 characters: %s", todo)
         http.Error(w, "Rejected: Todo exceeds 140 characters.", http.StatusBadRequest)
         return
