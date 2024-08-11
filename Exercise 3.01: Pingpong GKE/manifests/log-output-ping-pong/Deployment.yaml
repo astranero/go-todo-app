@@ -51,7 +51,3 @@ spec:
               secretKeyRef:
                 name: postgres-secret
                 key: DATABASE_URL
-      volumes:
-        - name: config 
-          configMap: 
-            name: logoutput

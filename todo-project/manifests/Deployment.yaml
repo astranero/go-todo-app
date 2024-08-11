@@ -37,6 +37,12 @@ spec:
       - name: todo-backend
         image: todo-backend
         imagePullPolicy: Always
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          httpGet:
+            port: 3451
+            path: "/healthz"
         ports:
         - containerPort: 8081
         resources:

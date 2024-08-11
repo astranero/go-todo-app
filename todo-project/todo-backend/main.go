@@ -53,12 +53,22 @@ func main() {
 		log.Fatalf("Failed to create todo table: %v", err)
 	}
 
-	http.HandleFunc("/", todosHandler)
+	go func(){
+		http.HandleFunc("/", todosHandler)
 
-	log.Printf("Server started on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+		log.Printf("Server started on port %s", port)
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+
+	go func(){
+		http.HandleFunc("/healthz", health)
+		port := "3541"
+		http.ListenAndServe(":"+port, nil); err != nil {
+			log.Fatalf("Failed to start healthz endpoint: %v", err)
+		}
+	}()
 }
 
 func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
@@ -136,4 +146,14 @@ func todosHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
+}
+
+func health(w http.ResponseWriter, r *http.Request){
+	err := db.Ping()
+	if err != nil {
+		http.Error(w, "Database connection failed.", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w,"OK")
 }

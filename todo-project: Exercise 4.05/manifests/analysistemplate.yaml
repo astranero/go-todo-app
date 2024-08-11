@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: cpu-usage-check
+spec:
+  metrics:
+    - name: cpu-usage
+      interval: 1m
+      count: 10
+      successCondition: result < 0.5
+      failureCondition: result >= 0.5
+      provider:
+        prometheus:
+          address: http://kube-prometheus-stack-1602-prometheus.prometheus.svc.cluster.local:9090
+          query: |
+            'sum(rate(container_cpu_usage_seconds_total{namespace="prometheus"}[10m]))'

@@ -1,14 +1,13 @@
 package main
 
-
 import (
+	"bufio"
 	"fmt"
 	"log"
-	"sync"
 	"net/http"
-	"time"
-	"bufio"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -17,22 +16,22 @@ import (
 
 var (
 	randomString string
-	timestamp string
-	mutex sync.Mutex
-	db *sqlx.DB 
+	timestamp    string
+	mutex        sync.Mutex
+	db           *sqlx.DB
 )
 
 type Counter struct {
 	Counter int `db:"counter"`
 }
 
-func main(){
+func main() {
 	log.Println("Application Started")
 
 	databaseURL := os.Getenv("DATABASE_URL")
-    if databaseURL == "" {
-        log.Fatal("DATABASE_URL is not set")
-    }
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
 
 	var err error
 	db, err = sqlx.Connect("postgres", databaseURL)
@@ -43,74 +42,72 @@ func main(){
 	defer db.Close()
 
 	ticker := time.NewTicker(5 * time.Second)
-	go func(){ 
+	go func() {
 		for t := range ticker.C {
 			mutex.Lock()
 			timestamp = t.Format(time.RFC3339)
 			randomString = uuid.New().String()
 			mutex.Unlock()
-			fmt.Printf("%s: %s\n", timestamp , randomString)
+			fmt.Printf("%s: %s\n", timestamp, randomString)
 		}
 	}()
 
-	go func(){ 
+	go func() {
 		http.HandleFunc("/", homeHandler)
 		port := "8080"
 		log.Printf("Server started on port %s", port)
 		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			log.Fatalf("Failed to start server: %v", err)
 		}
-	}
+	}()
 
-	go func(){
+	go func() {
 		http.HandleFunc("/healthz", health)
 		port := "3541"
 		if err := http.ListenAndServe(":"+port, nil); err != nil {
-			log.Fatalf("Failed to start healthz endpoint")
+			log.Fatalf("Failed to start healthz endpoint: %v", err)
 		}
-	}
+	}()
+
+	select {}
 }
 
-
-func homeHandler(w http.ResponseWriter, r *http.Request){
+func homeHandler(w http.ResponseWriter, r *http.Request) {
 	mutex.Lock()
 	defer mutex.Unlock()
-	
-	logEntry := fmt.Sprintf("%s: %s\n", timestamp , randomString)
+
+	logEntry := fmt.Sprintf("%s: %s\n", timestamp, randomString)
 
 	var counter Counter
 	err := db.Get(&counter, "SELECT counter FROM counter LIMIT 1")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error fetching counter from database: %v", err), http.StatusInternalServerError)
+		return
 	}
 
 	fileContent, err := reader("/config/information.txt")
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error reading HTTP response: %s", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error reading HTTP response: %v", err), http.StatusInternalServerError)
 		return
 	}
 	messageEnvVar := os.Getenv("MESSAGE")
 	if messageEnvVar == "" {
 		messageEnvVar = "MESSAGE environment variable not set"
-		http.Error(w, fmt.Sprintf("Error reading HTTP response: %s", err), http.StatusInternalServerError)
 	}
 
-
-	fmt.Fprintln(w, "file content: "+string(fileContent)+"\n"+"env variable: MESSAGE=" + string(messageEnvVar) + "\n" + string(logEntry)+"\n"+fmt.Sprintf("Counter: %d", counter.Counter))
+	fmt.Fprintln(w, "file content: "+fileContent+"\n"+"env variable: MESSAGE="+messageEnvVar+"\n"+logEntry+"\n"+fmt.Sprintf("Counter: %d", counter.Counter))
 }
-
-
 
 func reader(filename string) (string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return "", err
 	}
-
 	defer file.Close()
+
 	var lastLine string
 	scanner := bufio.NewScanner(file)
-	for scanner.Scan(){
+	for scanner.Scan() {
 		lastLine = scanner.Text()
 	}
 	if err := scanner.Err(); err != nil {
@@ -120,10 +117,12 @@ func reader(filename string) (string, error) {
 	return lastLine, nil
 }
 
-func health(w http.ResponseWriter, r *http.Request){
-	err := db.Ping(); err != nil {
+func health(w http.ResponseWriter, r *http.Request) {
+	err := db.Ping()
+	if err != nil {
 		http.Error(w, "Failed to connect to database.", http.StatusInternalServerError)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "OK")
+	fmt.Fprintln(w, "OK")
 }

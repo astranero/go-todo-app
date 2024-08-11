@@ -74,7 +74,7 @@ func main(){
 		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			log.Fatalf("Failed to start server: %v", err)
 		}
-	}
+	}()
 
 	go func(){
 		http.HandleFunc("/healthz", health)
@@ -82,7 +82,7 @@ func main(){
 		if err:= http.ListenAndServe(":"+port, nil); err != nil {
 			log.Fatalf("Failed to start server:%v", err)
 		}
-	}
+	}()
 
 	select{}
 }

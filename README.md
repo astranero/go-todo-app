@@ -6,3 +6,5 @@ Do it yourself solution is when we require a specific database platform tailored
 Nevertheless, you will also have to manage security of the data.
 Database as a Service is much simpler solution in most cases, you own a database without paying to design and manage the software that runs on it. It will also be secured, out-sourcing the security is always good practice, because in most-cases vendor will take responsibility for the lost data. For example when microsoft update cost million of dollars to CrowdStrike company that handles security of microsoft softwares without affecting as much Microsoft itself. 
 DBaaS solutions are usually ready to use, you initiate required solution by starting it with requirements that you want. Providers that are specialized in DBaaS invest a lot of resources in developing their security, backup and other services required for databases. Therefore there is in most cases guarantee of better database solutions than you could ever develop yourself.
+
+
