@@ -53,27 +53,25 @@ func main() {
 		todo TEXT,
 		Done BOOLEAN NOT NULL DEFAULT FALSE
 	)`
-
-	_, err = db.Exec(createTableQuery)
-	if err != nil {
+	if _, err = db.Exec(createTableQuery);  err != nil {
 		log.Fatalf("Failed to create todo table: %v", err)
 	}
 
-	go func() {
-		http.HandleFunc("/", todosHandler)
+    go func() {
+        mux := http.NewServeMux()
+        mux.HandleFunc("/", todosHandler)
+        log.Printf("Server started on port %s", port)
+        if err := http.ListenAndServe(":"+port, mux); err != nil {
+            log.Fatalf("Failed to start server: %v", err)
+        }
+    }()
 
-		log.Printf("Server started on port %s", port)
-		if err := http.ListenAndServe(":"+port, nil); err != nil {
-			log.Fatalf("Failed to start server: %v", err)
-		}
-	}()
-
-	go func() {
-		http.HandleFunc("/healthz", health)
-		if err := http.ListenAndServe(":"+healthCheckPort, nil); err != nil {
-			log.Fatalf("Failed to start healthz endpoint: %v", err)
-		}
-	}()
+    go func() {
+        http.HandleFunc("/healthz", health)
+        if err := http.ListenAndServe(":"+healthCheckPort, nil); err != nil {
+            log.Fatalf("Failed to start healthz endpoint: %v", err)
+        }
+    }()
 
 	select {}
 }
