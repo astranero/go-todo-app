@@ -98,7 +98,7 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(todo.Todo) > 140 {
-		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo)
+		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo.Todo)
 		http.Error(w, "Rejected: Todo exceeds 140 characters.", http.StatusBadRequest)
 		return
 	}
@@ -107,7 +107,7 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	todoInsert := `INSERT INTO todos (todo) VALUES ($1)`
-	_, err := db.Exec(todoInsert, todo)
+	_, err := db.Exec(todoInsert, todo.Todo)
 	if err != nil {
 		log.Printf("Failed to insert into database.")
 		http.Error(w, "Failed to insert into database", http.StatusInternalServerError)
