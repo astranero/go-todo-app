@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -9,8 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"errors"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -19,6 +20,9 @@ var (
 )
 
 func main() {
+
+	router := gin.Default()
+
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatalf("Failed to load .env file: %v", err)
@@ -37,7 +41,7 @@ func main() {
 	imagePath := os.Getenv("IMAGE_PATH")
 	imageURL := os.Getenv("IMAGE_URL")
 
-	if _ , err := os.Stat(imagePath); errors.Is(err, os.ErrNotExist){
+	if _, err := os.Stat(imagePath); errors.Is(err, os.ErrNotExist) {
 		err = downloadFile(imagePath, imageURL)
 		if err != nil {
 			log.Fatalf("Failed to download image.")
@@ -56,24 +60,17 @@ func main() {
 		}
 	}()
 
-	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/", fs)
+	router.Static("/static", "./static")
 
-	http.HandleFunc("/image", func(w http.ResponseWriter, r *http.Request){
-		http.ServeFile(w,r,imagePath)
+	router.GET("/image", func(c *gin.Context) {
+		c.File(imagePath)
 	})
 
-	http.HandleFunc("/submit", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			log.Printf("Invalid request method: %s", r.Method)
-			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-			return
-		}
-
-		todo := r.FormValue("todo")
+	router.POST("/submit", func(c *gin.Context) {
+		todo := c.PostForm("todo")
 		if todo == "" {
 			log.Printf("Todo cannot be empty.")
-			http.Error(w, "Todo cannot be empty", http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Todo cannot be empty"})
 			return
 		}
 
@@ -81,30 +78,45 @@ func main() {
 		resp, err := http.Post(requestURL, "application/x-www-form-urlencoded", strings.NewReader(fmt.Sprintf("todo=%s", todo)))
 		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
-			http.Error(w, fmt.Sprintf("Error sending request: %v", err), http.StatusInternalServerError)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
 			return
 		}
-
 		defer resp.Body.Close()
 
 		todoBody, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Printf("Error reading response from %s: %v", requestURL, err)
-			http.Error(w, fmt.Sprintf("Error reading response: %v", err), http.StatusInternalServerError)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error reading response: %v", err)})
 			return
 		}
 
 		log.Printf("Received submission: Todo=%s", todo)
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(todoBody)
+		c.Data(http.StatusOK, "application/json", todoBody)
 	})
 
-	http.HandleFunc("/todos", func(w http.ResponseWriter, r *http.Request) {
+	router.PUT("/todos/:id", func(c *gin.Context) {
+		todo := c.PostForm("todo")
+		
+		if todo == "" {
+			log.Printf("Todo cannot be empty.")
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Todo cannot be empty"})
+			return
+		}
+
 		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
-		resp, err := http.Get(requestURL)
+		req, err := http.NewRequest(http.MethodPut, requestURL, strings.NewReader(fmt.Sprintf("todo=%s", todo)))
+		if err != nil {
+			log.Printf("Error creating PUT request: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error creating request: %v", err)})
+			return
+		}
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
 		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
-			http.Error(w, fmt.Sprintf("Error sending request: %v", err), http.StatusInternalServerError)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
 			return
 		}
 		defer resp.Body.Close()
@@ -112,22 +124,41 @@ func main() {
 		todoBody, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Printf("Error reading response from %s: %v", requestURL, err)
-			http.Error(w, fmt.Sprintf("Error reading response: %v", err), http.StatusInternalServerError)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error reading response: %v", err)})
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(todoBody)
+		log.Printf("Updated the submission: Todo=%s", todo)
+		c.Data(http.StatusOK, "application/json", todoBody)
+	})
+
+	router.GET("/todos", func(c *gin.Context) {
+		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
+		resp, err := http.Get(requestURL)
+		if err != nil {
+			log.Printf("Error sending request to %s: %v", requestURL, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
+			return
+		}
+		defer resp.Body.Close()
+
+		todoBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("Error reading response from %s: %v", requestURL, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error reading response: %v", err)})
+			return
+		}
+
+		c.Data(http.StatusOK, "application/json", todoBody)
 	})
 
 	log.Printf("Server started on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := router.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
 
-
-func downloadFile(filepath string, url string)(err error){
+func downloadFile(filepath string, url string) (err error) {
 	out, err := os.Create(filepath)
 	if err != nil {
 		return err
