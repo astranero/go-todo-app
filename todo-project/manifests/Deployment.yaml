@@ -65,6 +65,8 @@ spec:
         env:
         - name: NATS_URL
           value: nats://my-nats.default.svc.cluster.local:4222
+        - name: DISCORD_URL
+          value: https://discord.com/api/webhooks/1272216427230924950/PwMo1VfloOWfUk33xrfqGLrulFqQubTPi_wg8hR2KERUUDp4bc7VeDotPMYJjoxNP3d5
       volumes:
       - name: persistent
         persistentVolumeClaim:
