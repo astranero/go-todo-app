@@ -13,6 +13,7 @@ env:
   FRONTEND_SERVICE: todo-app
   BACKEND_IMAGE: todo-backend
   BACKEND_SERVICE: todo-backend
+  BROADCASTER_IMAGE: todo-broadcaster
   BRANCH: ${{ github.ref_name }}
   
 jobs:
@@ -54,6 +55,12 @@ jobs:
           --tag "gcr.io/${{ env.GCP_PROJECT }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" \
           "./todo-project/${{ env.BACKEND_IMAGE }}"
 
+    - name: Build Broadcaster Docker image
+      run: |-
+        docker build \
+          --tag "gcr.io/${{ env.GCP_PROJECT }}/${{ env.BROADCASTER_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" \
+          "./todo-project/${{ env.BROADCASTER_IMAGE }}"
+  
     - name: Build Frontend Docker image
       run: |-
         docker build \
@@ -64,6 +71,10 @@ jobs:
     - name: Publish Backend Docker image
       run: |-
         docker push "gcr.io/${{ env.GCP_PROJECT }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
+
+    - name: Publish Broadcaster Docker image
+      run: |-
+        docker push "gcr.io/${{ env.GCP_PROJECT }}/${{ env.BROADCASTER_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
 
     - name: Publish Frontend Docker image
       run: |-
@@ -90,7 +101,7 @@ jobs:
 
         kustomize edit set image ${{ env.FRONTEND_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.FRONTEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
         kustomize edit set image ${{ env.BACKEND_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.BACKEND_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
-
+        kustomize edit set image ${{ env.BROADCASTER_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.BROADCASTER_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
         kustomize build . | kubectl apply -f -
         
         kubectl rollout status deployment/todo

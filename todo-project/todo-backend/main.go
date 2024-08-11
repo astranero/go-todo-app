@@ -11,11 +11,13 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/nats-io/nats.go"
 )
 
 var (
-	mutex sync.Mutex
-	db    *sqlx.DB
+	mutex    sync.Mutex
+	db       *sqlx.DB
+	nats_url string
 )
 
 const healthCheckPort = "3541"
@@ -40,6 +42,11 @@ func main() {
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
 		log.Fatal("DATABASE_URL is not set")
+	}
+
+	nats_url = os.Getenv("NATS_URL")
+	if nats_url == "" {
+		log.Fatal("NATS_URL is not set")
 	}
 
 	db, err = sqlx.Connect("postgres", databaseURL)
@@ -114,6 +121,27 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Received submission: Todo=%s", todo.Todo)
 
+	nc, err := nats.Connect(nats_url, nats.Name("API PublishBytes"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer nc.Close()
+
+	msg := map[string]string{
+		"user":    "bot",
+		"message": "A todo was created.",
+	}
+	msgBytes, err := json.Marshal(msg)
+	if err != nil {
+		log.Printf("Failed to marshal message: %v", err)
+		return
+	}
+
+	if err := nc.Publish("todos", msgBytes); err != nil {
+		log.Fatal(err)
+		return
+	}
+
 	var todoList []Todo
 	err = db.Select(&todoList, `SELECT todo FROM todos WHERE Done = FALSE`)
 	if err != nil {
@@ -173,6 +201,26 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nc, err := nats.Connect(nats_url, nats.Name("API PublishBytes"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	msg := map[string]string{
+		"user":    "bot",
+		"message": "A todo was updated.",
+	}
+	msgBytes, err := json.Marshal(msg)
+	if err != nil {
+		log.Printf("Failed to marshal message: %v", err)
+		return
+	}
+
+	if err := nc.Publish("todos", msgBytes); err != nil {
+		log.Fatal(err)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -228,9 +276,9 @@ func todosHandler(w http.ResponseWriter, r *http.Request) {
 		HandleTodoPut(w, r)
 	case http.MethodDelete:
 		HandleTodoDelete(w, r)
-    case http.MethodOptions:
-        w.Header().Set("Allow", "POST, GET, PUT, DELETE")
-        w.WriteHeader(http.StatusOK)
+	case http.MethodOptions:
+		w.Header().Set("Allow", "POST, GET, PUT, DELETE")
+		w.WriteHeader(http.StatusOK)
 	default:
 		w.Header().Set("Allow", "POST, GET, PUT, DELETE")
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
