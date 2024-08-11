@@ -124,12 +124,6 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todoList = append(todoList, Todo{
-		ID:   todo.ID,
-		Todo: todo.Todo,
-		Done: todo.Done,
-	})
-
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(todoList); err != nil {
 		log.Printf("Failed to encode response.")
@@ -181,19 +175,7 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var updatedTodo Todo
-	err = db.Get(&updatedTodo, `SELECT id, todo, done FROM todos WHERE id = $1`, id)
-	if err != nil {
-		log.Printf("Failed to fetch updated todo: %v", err)
-		http.Error(w, "Failed to fetch updated todo", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(updatedTodo); err != nil {
-		log.Printf("Failed to encode response.")
-		http.Error(w, "Failed to encode response.", http.StatusInternalServerError)
-	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func HandleTodoGet(w http.ResponseWriter, r *http.Request) {
