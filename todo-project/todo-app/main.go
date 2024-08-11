@@ -60,7 +60,7 @@ func main() {
 		}
 	}()
 
-	router.Static("/static", "./static")
+	router.Static("/", "./static")
 
 	router.GET("/image", func(c *gin.Context) {
 		c.File(imagePath)
@@ -96,7 +96,7 @@ func main() {
 
 	router.PUT("/todos/:id", func(c *gin.Context) {
 		todo := c.PostForm("todo")
-		
+
 		if todo == "" {
 			log.Printf("Todo cannot be empty.")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Todo cannot be empty"})

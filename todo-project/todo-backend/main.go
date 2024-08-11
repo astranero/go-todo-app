@@ -64,18 +64,19 @@ func main() {
 		log.Fatalf("Failed to create todo table: %v", err)
 	}
 
-	go func() {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/", todosHandler)
+	go func(){
+		http.HandleFunc("/", todosHandler)
+
 		log.Printf("Server started on port %s", port)
-		if err := http.ListenAndServe(":"+port, mux); err != nil {
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()
 
-	go func() {
+	go func(){
 		http.HandleFunc("/healthz", health)
-		if err := http.ListenAndServe(":"+healthCheckPort, nil); err != nil {
+		port := "3541"
+		http.ListenAndServe(":"+port, nil); err != nil {
 			log.Fatalf("Failed to start healthz endpoint: %v", err)
 		}
 	}()
