@@ -28,7 +28,7 @@
                 todos.forEach(todo => {
                     const li = document.createElement('li');
                     li.textContent = todo.Todo;
-                    li.setAttribute('data-id', todo.Id)
+                    li.setAttribute('data-id', todo.ID)
                     li.addEventListener("click", async function () {
                         await disableTodo(todo);
                     });
@@ -44,7 +44,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    id: todo.Id,
+                    id: todo.ID,
                     Todo: todo.Todo,
                     Done: true
                 })

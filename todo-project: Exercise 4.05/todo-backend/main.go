@@ -18,7 +18,7 @@ var (
 )
 
 type Todo struct {
-	Id   int    `db:"id" json:"id"`
+	ID   int    `db:"id" json:"id"`
 	Todo string `db:"todo" json:"todo"`
 	Done bool   `db:"done" json:"done"`
 }
@@ -115,11 +115,11 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	todoList = append(todoList, Todo{
-		id: todo.Id, 
-		Todo: todo.Todo, 
-		Done: false,
-		}
-	)
+		id: todo.ID, 
+		Todo: todo.Todo,
+		Done: todo.Done,
+	})
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(todoList); err != nil {
 		log.Printf("Failed to encode response.")
