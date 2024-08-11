@@ -18,8 +18,8 @@ var (
 )
 
 type Todo struct {
-	ID int `db:"id" json:"id"`
-	Todo string `db:"todo" json:"todo"`
+	ID int `db:"id" json:"id"`,
+	Todo string `db:"todo" json:"todo"`,
 	Done bool `db:"done" json:"done"`
 
 }
