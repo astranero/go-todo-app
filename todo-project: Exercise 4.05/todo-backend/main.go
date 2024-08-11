@@ -83,14 +83,21 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
-	todo := r.FormValue("todo")
-	if todo == "" {
+
+	var todo Todo
+	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
+		log.Printf("Error decoding todo: %v", err)
+		http.Error(w, "Invalid todo format", http.StatusBadRequest)
+		return
+	}
+
+	if todo.Todo == "" {
 		log.Printf("Todo cannot be empty.")
 		http.Error(w, "Todo cannot be empty", http.StatusBadRequest)
 		return
 	}
 
-	if len(todo) > 140 {
+	if len(todo.Todo) > 140 {
 		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo)
 		http.Error(w, "Rejected: Todo exceeds 140 characters.", http.StatusBadRequest)
 		return
@@ -107,7 +114,7 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Received submission: Todo=%s", todo)
+	log.Printf("Received submission: Todo=%s", todo.Todo)
 
 	var todoList []Todo
 	err = db.Select(&todoList, `SELECT todo FROM todos WHERE Done = FALSE`)
@@ -118,7 +125,7 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	todoList = append(todoList, Todo{
-		id:   todo.ID,
+		ID:   todo.ID,
 		Todo: todo.Todo,
 		Done: todo.Done,
 	})
@@ -158,7 +165,7 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(todo.Todo) > 140 {
-		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo)
+		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo.Todo)
 		http.Error(w, "Rejected: Todo exceeds 140 characters.", http.StatusBadRequest)
 		return
 	}
@@ -167,7 +174,7 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	query := `UPDATE todos SET todo = $1, done = $2 WHERE id = $3`
-	_, err := db.Exec(query, todo.Todo, todo.Done, id)
+	_, err = db.Exec(query, todo.Todo, todo.Done, id)
 	if err != nil {
 		log.Printf("Failed to update the todo with ID %s, %v", id, err)
 		http.Error(w, "Failed to update the todo in the database", http.StatusInternalServerError)
