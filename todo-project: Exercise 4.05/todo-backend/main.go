@@ -2,13 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"sync"
 
-	"github.com/joho/godotenv"
 	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -16,6 +17,8 @@ var (
 	mutex sync.Mutex
 	db    *sqlx.DB
 )
+
+const healthCheckPort = "3541"
 
 type Todo struct {
 	ID   int    `db:"id" json:"id"`
@@ -56,7 +59,7 @@ func main() {
 		log.Fatalf("Failed to create todo table: %v", err)
 	}
 
-	go func(){
+	go func() {
 		http.HandleFunc("/", todosHandler)
 
 		log.Printf("Server started on port %s", port)
@@ -65,14 +68,14 @@ func main() {
 		}
 	}()
 
-	go func(){
+	go func() {
 		http.HandleFunc("/healthz", health)
-
-		port := "3541"
-		if err := http.ListenAndServe(":"+port, nil); err != nil {
+		if err := http.ListenAndServe(":"+healthCheckPort, nil); err != nil {
 			log.Fatalf("Failed to start healthz endpoint: %v", err)
 		}
 	}()
+
+	select {}
 }
 
 func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
@@ -88,10 +91,10 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(todo) > 140 {
-        log.Printf("Rejected: Todo exceeds 140 characters: %s", todo)
-        http.Error(w, "Rejected: Todo exceeds 140 characters.", http.StatusBadRequest)
-        return
-    }
+		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo)
+		http.Error(w, "Rejected: Todo exceeds 140 characters.", http.StatusBadRequest)
+		return
+	}
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -115,7 +118,7 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	todoList = append(todoList, Todo{
-		id: todo.ID, 
+		id:   todo.ID,
 		Todo: todo.Todo,
 		Done: todo.Done,
 	})
@@ -140,13 +143,13 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    var todo Todo
-    err := json.NewDecoder(r.Body).Decode(&todo)
-    if err != nil {
-        log.Printf("Failed to decode request body: %v", err)
-        http.Error(w, "Failed to decode request body", http.StatusBadRequest)
-        return
-    }
+	var todo Todo
+	err := json.NewDecoder(r.Body).Decode(&todo)
+	if err != nil {
+		log.Printf("Failed to decode request body: %v", err)
+		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
+		return
+	}
 
 	if todo.Todo == "" {
 		log.Printf("Todo cannot be empty.")
@@ -155,10 +158,10 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(todo.Todo) > 140 {
-        log.Printf("Rejected: Todo exceeds 140 characters: %s", todo)
-        http.Error(w, "Rejected: Todo exceeds 140 characters.", http.StatusBadRequest)
-        return
-    }
+		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo)
+		http.Error(w, "Rejected: Todo exceeds 140 characters.", http.StatusBadRequest)
+		return
+	}
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -178,14 +181,13 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to fetch updated todo", http.StatusInternalServerError)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(updatedTodo); err != nil {
 		log.Printf("Failed to encode response.")
 		http.Error(w, "Failed to encode response.", http.StatusInternalServerError)
 	}
 }
-
 
 func HandleTodoGet(w http.ResponseWriter, r *http.Request) {
 	mutex.Lock()
@@ -206,10 +208,9 @@ func HandleTodoGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func HandleTodoDelete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		log.Printf("Id cannot be empty.")
@@ -217,8 +218,8 @@ func HandleTodoDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    mutex.Lock()
-    defer mutex.Unlock()
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	_, err := db.Exec(`DELETE FROM todos WHERE id = $1`, id)
 	if err != nil {
@@ -229,7 +230,6 @@ func HandleTodoDelete(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader((http.StatusOK))
 }
-
 
 func todosHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -244,12 +244,12 @@ func todosHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func health(w http.ResponseWriter, r *http.Request){
+func health(w http.ResponseWriter, r *http.Request) {
 	err := db.Ping()
 	if err != nil {
 		http.Error(w, "Database connection failed.", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w,"OK")
+	fmt.Fprintf(w, "OK")
 }
