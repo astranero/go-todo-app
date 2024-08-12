@@ -1,15 +1,11 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Rollout
+apiVersion: apps/v1
+kind: z
 metadata:
   name: todo
 spec:
   replicas: 1
   strategy:
-    canary:
-      steps: 
-      - analysis:
-          templates:
-          - templateName: cpu-usage-check
+    type: Recreate
   selector:
     matchLabels:
       app: todo
