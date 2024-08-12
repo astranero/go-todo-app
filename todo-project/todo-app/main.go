@@ -152,7 +152,7 @@ func main() {
 		c.Data(http.StatusOK, "application/json", todoBody)
 	})
 
-	router.Static("/", "./static")
+	router.Static("/home", "./static")
 
 	log.Printf("Server started on port %s", port)
 	if err := router.Run(":" + port); err != nil {
