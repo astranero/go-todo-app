@@ -1,9 +1,9 @@
-apiVersion: batch/v1 # Correct API version for CronJob
+apiVersion: batch/v1 
 kind: CronJob 
 metadata:
-  name: backup # Metadata with name
+  name: backup 
 spec:
-  schedule: "23 10 * * *" # Correct cron schedule string
+  schedule: "23 10 * * *"
   jobTemplate:
     spec:
       template:
@@ -11,7 +11,9 @@ spec:
           containers:
           - name: backup
             image: ubuntu:latest
-            command: ["/bin/bash", "/tmp/backup_pg_dump.sh"]
+            command: |-
+              chmod +x /tmp/backup_pg_dump.sh
+              /bin/bash /tmp/backup_pg_dump.sh
             env:
             - name: DATABASE_URL
               valueFrom:

@@ -60,8 +60,6 @@ func main() {
 		}
 	}()
 
-	router.Static("/", "./static")
-
 	router.GET("/image", func(c *gin.Context) {
 		c.File(imagePath)
 	})
@@ -153,6 +151,8 @@ func main() {
 
 		c.Data(http.StatusOK, "application/json", todoBody)
 	})
+
+	router.Static("/", "./static")
 
 	log.Printf("Server started on port %s", port)
 	if err := router.Run(":" + port); err != nil {
