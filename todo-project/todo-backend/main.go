@@ -76,7 +76,7 @@ func main() {
 	go func(){
 		http.HandleFunc("/healthz", health)
 		port := "3541"
-		http.ListenAndServe(":"+port, nil); err != nil {
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			log.Fatalf("Failed to start healthz endpoint: %v", err)
 		}
 	}()
