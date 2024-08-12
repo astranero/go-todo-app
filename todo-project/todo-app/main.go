@@ -68,6 +68,7 @@ func main() {
 
 	router.POST("/submit", func(c *gin.Context) {
 		todo := c.PostForm("todo")
+
 		if todo == "" {
 			log.Printf("Todo cannot be empty.")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Todo cannot be empty"})
@@ -78,9 +79,10 @@ func main() {
 		resp, err := http.Post(requestURL, "application/x-www-form-urlencoded", strings.NewReader(fmt.Sprintf("todo=%s", todo)))
 		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to process your request"})
 			return
 		}
+
 		defer resp.Body.Close()
 
 		todoBody, err := io.ReadAll(resp.Body)
