@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: todo
+  name: todo-rollout
 spec:
   replicas: 1
   strategy:
