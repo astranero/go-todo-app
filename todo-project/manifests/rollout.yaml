@@ -43,6 +43,7 @@ spec:
         imagePullPolicy: Always
         readinessProbe:
           initialDelaySeconds: 10
+          timeoutSeconds: 1
           periodSeconds: 5
           httpGet:
             port: 3451
