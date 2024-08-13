@@ -45,7 +45,7 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 5
           httpGet:
-            port: 3541
+            port: 3451
             path: "/healthz"
         ports:
         - containerPort: 8081

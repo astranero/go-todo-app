@@ -20,7 +20,7 @@ var (
 	nats_url string
 )
 
-const healthCheckPort = "3541"
+const healthCheckPort = "3451"
 
 type Todo struct {
 	ID   int    `db:"id" json:"id"`
@@ -64,7 +64,7 @@ func main() {
 		log.Fatalf("Failed to create todo table: %v", err)
 	}
 
-	go func(){
+	go func() {
 		http.HandleFunc("/", todosHandler)
 
 		log.Printf("Server started on port %s", port)
@@ -73,10 +73,9 @@ func main() {
 		}
 	}()
 
-	go func(){
+	go func() {
 		http.HandleFunc("/healthz", health)
-		port := "3541"
-		if err := http.ListenAndServe(":"+port, nil); err != nil {
+		if err := http.ListenAndServe(":"+healthCheckPort, nil); err != nil {
 			log.Fatalf("Failed to start healthz endpoint: %v", err)
 		}
 	}()
