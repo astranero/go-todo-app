@@ -104,8 +104,6 @@ jobs:
         kustomize edit set image ${{ env.BROADCASTER_IMAGE }}="gcr.io/${{ env.GCP_PROJECT }}/${{ env.BROADCASTER_IMAGE }}:${{ env.BRANCH }}-${{ github.sha }}" 
         kustomize build . | kubectl apply -f -
         
-        kubectl rollout status deployment/todo
-        
         # Get the services information
         kubectl get services -o wide
 
