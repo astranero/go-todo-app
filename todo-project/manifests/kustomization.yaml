@@ -11,5 +11,4 @@ resources:
 - service.yaml
 - backup-configmap.yaml
 - backup.yaml 
-- analysistemplate.yaml
-- rollout.yaml
+- deployment.yaml
