@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello</title>
+</head>
+
+<body>
+    <h1>Hello, World!</h1>
+    <p>This is a server running with golang and we have added github actions..</p>
+    <img src="/image" alt="A random picsum picture.">
+    <form id="todo-form" action="/submit" method="post">
+        <label for="todo"> Todo </label>
+        <input type="text" id="todo" name="todo" required>
+        <button type="submit">Submit</button>
+    </form>
+    <h2>Todos</h2>
+    <ul id="todos"></ul>
+    <script>
+        async function fetchTodos() {
+            const response = await fetch('/todos');
+            if (response.ok) {
+                const todos = await response.json();
+                const ul = document.getElementById('todos');
+                ul.innerHTML = '';
+                todos.forEach(todo => {
+                    const li = document.createElement('li');
+                    li.textContent = todo.Todo;
+                    li.setAttribute('data-id', todo.ID)
+                    li.addEventListener("click", async function () {
+                        await disableTodo(todo);
+                    });
+                    ul.appendChild(li);
+                });
+            }
+        }
+
+        async function disableTodo(todo) {
+            const response = await fetch('/todos/${todo.Id}', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: todo.ID,
+                    Todo: todo.Todo,
+                    Done: true
+                })
+            });
+
+            if (response.ok) {
+                console.log("Todo updated")
+            } else {
+                console.error("Failed to update todo with ID ${todo.id}");
+            }
+        };
+
+        document.getElementById('todo-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = new URLSearchParams(formData);
+            const response = await fetch(event.target.action, {
+                method: event.target.method,
+                body: data,
+            });
+            if (response.ok) {
+                fetchTodos();
+            } else {
+                console.error
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", fetchTodos);
+    </script>
+</body>
+
+</html>
