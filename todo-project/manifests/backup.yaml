@@ -10,7 +10,8 @@ spec:
         spec:
           containers:
           - name: backup
-            image: ubuntu:latest
+            image: docker.io/library/ubuntu:latest
+            imagePullPolicy: IfNotPresent
             command: ["/bin/bash", "-c", "chmod +x /tmp/backup_pg_dump.sh && /tmp/backup_pg_dump.sh"]
             env:
             - name: DATABASE_URL

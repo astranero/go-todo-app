@@ -75,7 +75,7 @@ func main() {
 
 		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
 		resp, err := http.Post(requestURL, "application/x-www-form-urlencoded", strings.NewReader(fmt.Sprintf("todo=%s", todo)))
-		if err != nil {
+		if resp.StatusCode != http.StatusOK {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to process your request"})
 			return
@@ -114,7 +114,7 @@ func main() {
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
-		if err != nil {
+		if resp.StatusCode != http.StatusOK {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
 			return
@@ -135,7 +135,7 @@ func main() {
 	router.GET("/todos", func(c *gin.Context) {
 		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
 		resp, err := http.Get(requestURL)
-		if err != nil {
+		if resp.StatusCode != http.StatusOK {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
 			return
