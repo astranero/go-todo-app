@@ -22,12 +22,12 @@ var (
 )
 
 type Todo struct {
+	ID   int    `db:"id" json:"id,omitempty"`
 	Todo string `db:"todo" json:"todo"`
 	Done bool   `db:"done" json:"done"`
 }
 
 func main() {
-
 	router := gin.Default()
 
 	err := godotenv.Load(".env")
@@ -78,17 +78,6 @@ func main() {
 			return
 		}
 
-		if todoText == "" {
-			log.Printf("Todo cannot be empty.")
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Todo cannot be empty"})
-			return
-		}
-		
-		todo := Todo{
-			Todo: todoText,
-			Done: false,
-		}
-	
 		todoJSON, err := json.Marshal(todo)
 		if err != nil {
 			log.Printf("Error marshalling todo to JSON: %v", err)
@@ -119,16 +108,14 @@ func main() {
 			return
 		}
 
-		log.Printf("Received submission: Todo=%s", todoText)
+		log.Printf("Received submission: Todo=%s", todo.Todo)
 		c.Data(http.StatusOK, "application/json", todoBody)
 	})
 
 	router.PUT("/todos/:id", func(c *gin.Context) {
-		todo := c.PostForm("todo")
-
-		if todo == "" {
-			log.Printf("Todo cannot be empty.")
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Todo cannot be empty"})
+		var todo Todo
+		if err := c.ShouldBindJSON(&todo); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todo format"})
 			return
 		}
 

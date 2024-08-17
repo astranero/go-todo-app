@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -25,7 +23,7 @@ var (
 const healthCheckPort = "3541"
 
 type Todo struct {
-	ID   int    `db:"id" json:"id"`
+	ID   int    `db:"id" json:"id,omitempty"`
 	Todo string `db:"todo" json:"todo"`
 	Done bool   `db:"done" json:"done"`
 }
@@ -104,6 +102,10 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Todo cannot be empty.")
 		http.Error(w, "Todo cannot be empty", http.StatusBadRequest)
 		return
+	}
+
+	if !todo.Done {
+		todo.Done = false
 	}
 
 	if len(todo.Todo) > 140 {
@@ -186,6 +188,10 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Todo cannot be empty.")
 		http.Error(w, "Todo cannot be empty", http.StatusBadRequest)
 		return
+	}
+
+	if !todo.Done {
+		todo.Done = false
 	}
 
 	if len(todo.Todo) > 140 {

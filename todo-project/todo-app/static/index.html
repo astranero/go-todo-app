@@ -69,7 +69,7 @@
                 alert("Todo cannot be empty.");
                 return;
             }
-            const todoData = JSON.stringify({ todo: todoText });
+            const todoData = JSON.stringify({ Todo: todoText, Done: false });
             const response = await fetch('/submit', {
                 method: 'POST',
                 headers: {
