@@ -126,14 +126,16 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 
 	nc, err := nats.Connect(nats_url, nats.Name("API PublishBytes"))
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to connect to nats", http.StatusInternalServerError)
 	}
+
 	defer nc.Close()
 
 	msg := map[string]string{
 		"user":    "bot",
 		"message": "A todo was created.",
 	}
+
 	msgBytes, err := json.Marshal(msg)
 	if err != nil {
 		log.Printf("Failed to marshal message: %v", err)
@@ -141,7 +143,7 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := nc.Publish("todos", msgBytes); err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to publish todos to nc", http.StatusInternalServerError)
 		return
 	}
 
@@ -206,7 +208,7 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 
 	nc, err := nats.Connect(nats_url, nats.Name("API PublishBytes"))
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to connect to nats", http.StatusInternalServerError)
 	}
 
 	msg := map[string]string{
@@ -220,7 +222,7 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := nc.Publish("todos", msgBytes); err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to publish to nats", http.StatusInternalServerError)
 		return
 	}
 
@@ -237,7 +239,7 @@ func HandleTodoGet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Failed to fetch todos from database.")
 		http.Error(w, "Failed to fetch todos from database.", http.StatusInternalServerError)
-		return
+		todoList = []Todo{}
 	}
 
 	if err := json.NewEncoder(w).Encode(todoList); err != nil {

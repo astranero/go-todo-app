@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -18,6 +20,11 @@ import (
 var (
 	mutex sync.Mutex
 )
+
+type Todo struct {
+	todo string `db:"todo" json:"todo"`
+	done bool   `db:"done" json:"done"`
+}
 
 func main() {
 
@@ -65,16 +72,28 @@ func main() {
 	})
 
 	router.POST("/submit", func(c *gin.Context) {
-		todo := c.PostForm("todo")
+		todoText := c.PostForm("todo")
 
-		if todo == "" {
+		if todoText == "" {
 			log.Printf("Todo cannot be empty.")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Todo cannot be empty"})
 			return
 		}
+		
+		todo := Todo{
+			todo: todoText,
+			done: false,
+		}
+	
+		todoJSON, err := json.Marshal(todo)
+		if err != nil {
+			log.Printf("Error marshalling todo to JSON: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error preparing request data"})
+			return
+		}
 
 		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
-		resp, err := http.Post(requestURL, "application/x-www-form-urlencoded", strings.NewReader(fmt.Sprintf("todo=%s", todo)))
+		resp, err := http.Post(requestURL, "application/json", bytes.NewBuffer((todoJSON)))
 		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to process your request"})
@@ -96,7 +115,7 @@ func main() {
 			return
 		}
 
-		log.Printf("Received submission: Todo=%s", todo)
+		log.Printf("Received submission: Todo=%s", todoText)
 		c.Data(http.StatusOK, "application/json", todoBody)
 	})
 
