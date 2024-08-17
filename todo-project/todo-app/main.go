@@ -152,15 +152,11 @@ func main() {
 		c.Data(http.StatusOK, "application/json", todoBody)
 	})
 
+	router.Static("/home", "./static/index.html")
+
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "Welcome to the Todo App!"})
 	})
-
-
-	router.GET("/home", func(c *gin.Context) {
-		c.File("./static/index.html")
-	})
-
 
 	log.Printf("Server started on port %s", port)
 	if err := router.Run(":" + port); err != nil {
