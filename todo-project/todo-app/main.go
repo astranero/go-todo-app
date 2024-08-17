@@ -75,13 +75,19 @@ func main() {
 
 		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
 		resp, err := http.Post(requestURL, "application/x-www-form-urlencoded", strings.NewReader(fmt.Sprintf("todo=%s", todo)))
-		if resp.StatusCode != http.StatusOK {
+		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to process your request"})
 			return
 		}
 
 		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("Non-OK HTTP status: %d", resp.StatusCode)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Backend responded with error"})
+			return
+		}
 
 		todoBody, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -110,16 +116,24 @@ func main() {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error creating request: %v", err)})
 			return
 		}
+
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
-		if resp.StatusCode != http.StatusOK {
+		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
 			return
 		}
+
 		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("HTTP status: %d", resp.StatusCode)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
+			return
+		}
 
 		todoBody, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -135,11 +149,12 @@ func main() {
 	router.GET("/todos", func(c *gin.Context) {
 		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
 		resp, err := http.Get(requestURL)
-		if resp.StatusCode != http.StatusOK {
+		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
 			return
 		}
+
 		defer resp.Body.Close()
 
 		todoBody, err := io.ReadAll(resp.Body)
