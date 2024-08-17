@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -92,8 +94,17 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("Error reading request body: %v", err)
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+
+	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
 	var todo Todo
-	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
+	if err := json.Unmarshal(bodyBytes, &todo); err != nil {
 		log.Printf("Error decoding todo: %v", err)
 		http.Error(w, "Invalid todo format", http.StatusBadRequest)
 		return
@@ -115,7 +126,7 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	todoInsert := `INSERT INTO todos (todo) VALUES ($1)`
-	_, err := db.Exec(todoInsert, todo.todo)
+	_, err = db.Exec(todoInsert, todo.todo)
 	if err != nil {
 		log.Printf("Failed to insert into database.")
 		http.Error(w, "Failed to insert into database", http.StatusInternalServerError)
@@ -175,8 +186,17 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("Error reading request body: %v", err)
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+
+	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
 	var todo Todo
-	err := json.NewDecoder(r.Body).Decode(&todo)
+	err = json.Unmarshal(bodyBytes, &todo)
 	if err != nil {
 		log.Printf("Failed to decode request body: %v", err)
 		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
