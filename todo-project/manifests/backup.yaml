@@ -12,7 +12,7 @@ spec:
           - name: backup
             image: docker.io/library/ubuntu:latest
             imagePullPolicy: IfNotPresent
-            command: ["/bin/bash", "-c", "chmod +x /tmp/backup_pg_dump.sh && /tmp/backup_pg_dump.sh"]
+            command: ["/bin/bash", "-c", "chmod +x /scripts/backup_pg_dump.sh && /scripts/backup_pg_dump.sh"]
             env:
             - name: DATABASE_URL
               valueFrom:
@@ -26,8 +26,7 @@ spec:
                   key: API_KEY
             volumeMounts:
               - name: backup-config
-                mountPath: /tmp/backup_pg_dump.sh
-                subPath: backup_pg_dump.sh
+                mountPath: /scripts
           restartPolicy: OnFailure
           volumes:
           - name: backup-config
