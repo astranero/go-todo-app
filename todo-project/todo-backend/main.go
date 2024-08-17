@@ -20,7 +20,7 @@ var (
 	nats_url string
 )
 
-const healthCheckPort = "3451"
+const healthCheckPort = "3541"
 
 type Todo struct {
 	ID   int    `db:"id" json:"id"`
@@ -64,24 +64,24 @@ func main() {
 		log.Fatalf("Failed to create todo table: %v", err)
 	}
 
-    todoMux := http.NewServeMux()
-    todoMux.HandleFunc("/", todosHandler)
+	todoMux := http.NewServeMux()
+	todoMux.HandleFunc("/", todosHandler)
 
-    healthMux := http.NewServeMux()
-    healthMux.HandleFunc("/healthz", health)
+	healthMux := http.NewServeMux()
+	healthMux.HandleFunc("/healthz", health)
 
-    go func() {
-        log.Printf("Server started on port %s", port)
-        if err := http.ListenAndServe(":"+port, todoMux); err != nil {
-            log.Fatalf("Failed to start server: %v", err)
-        }
-    }()
+	go func() {
+		log.Printf("Server started on port %s", port)
+		if err := http.ListenAndServe(":"+port, todoMux); err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
 
-    go func() {
-        if err := http.ListenAndServe(":"+healthCheckPort, healthMux); err != nil {
-            log.Fatalf("Failed to start healthz endpoint: %v", err)
-        }
-    }()
+	go func() {
+		if err := http.ListenAndServe(":"+healthCheckPort, healthMux); err != nil {
+			log.Fatalf("Failed to start healthz endpoint: %v", err)
+		}
+	}()
 
 	select {}
 }
