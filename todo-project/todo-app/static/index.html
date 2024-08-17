@@ -27,8 +27,8 @@
                 ul.innerHTML = '';
                 todos.forEach(todo => {
                     const li = document.createElement('li');
-                    li.textContent = todo.Todo;
-                    li.setAttribute('data-id', todo.ID)
+                    li.textContent = todo.todo;
+                    li.setAttribute('data-id', todo.id)
                     li.addEventListener("click", async function () {
                         await disableTodo(todo);
                     });
@@ -38,22 +38,22 @@
         }
 
         async function disableTodo(todo) {
-            const response = await fetch('/todos/${todo.Id}', {
+            const response = await fetch(`/todos/${todo.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    id: todo.ID,
-                    Todo: todo.Todo,
-                    Done: true
+                    id: todo.id,
+                    todo: todo.todo,
+                    done: true
                 })
             });
 
             if (response.ok) {
                 console.log("Todo updated")
             } else {
-                console.error("Failed to update todo with ID ${todo.id}");
+                console.error(`Failed to update todo with ID ${todo.id}`);
             }
         };
 
