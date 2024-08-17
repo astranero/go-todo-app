@@ -22,8 +22,8 @@ var (
 )
 
 type Todo struct {
-	todo string `db:"todo" json:"todo"`
-	done bool   `db:"done" json:"done"`
+	Todo string `db:"todo" json:"todo"`
+	Done bool   `db:"done" json:"done"`
 }
 
 func main() {
@@ -72,7 +72,11 @@ func main() {
 	})
 
 	router.POST("/submit", func(c *gin.Context) {
-		todoText := c.PostForm("todo")
+		var todo Todo
+		if err := c.ShouldBindJSON(&todo); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todo format"})
+			return
+		}
 
 		if todoText == "" {
 			log.Printf("Todo cannot be empty.")
@@ -81,8 +85,8 @@ func main() {
 		}
 		
 		todo := Todo{
-			todo: todoText,
-			done: false,
+			Todo: todoText,
+			Done: false,
 		}
 	
 		todoJSON, err := json.Marshal(todo)

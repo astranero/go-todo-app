@@ -25,9 +25,9 @@ var (
 const healthCheckPort = "3541"
 
 type Todo struct {
-	id   int    `db:"id" json:"id"`
-	todo string `db:"todo" json:"todo"`
-	done bool   `db:"done" json:"done"`
+	ID   int    `db:"id" json:"id"`
+	Todo string `db:"todo" json:"todo"`
+	Done bool   `db:"done" json:"done"`
 }
 
 func main() {
@@ -94,30 +94,20 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bodyBytes, err := io.ReadAll(r.Body)
-	if err != nil {
-		log.Printf("Error reading request body: %v", err)
-		http.Error(w, "Error reading request body", http.StatusInternalServerError)
-		return
-	}
-
-	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-
 	var todo Todo
-	if err := json.Unmarshal(bodyBytes, &todo); err != nil {
-		log.Printf("Error decoding todo: %v", err)
-		http.Error(w, "Invalid todo format", http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
+		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
 		return
 	}
 
-	if todo.todo == "" {
+	if todo.Todo == "" {
 		log.Printf("Todo cannot be empty.")
 		http.Error(w, "Todo cannot be empty", http.StatusBadRequest)
 		return
 	}
 
-	if len(todo.todo) > 140 {
-		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo.todo)
+	if len(todo.Todo) > 140 {
+		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo.Todo)
 		http.Error(w, "Rejected: Todo exceeds 140 characters.", http.StatusBadRequest)
 		return
 	}
@@ -126,14 +116,14 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	todoInsert := `INSERT INTO todos (todo) VALUES ($1)`
-	_, err = db.Exec(todoInsert, todo.todo)
+	_, err := db.Exec(todoInsert, todo.Todo)
 	if err != nil {
 		log.Printf("Failed to insert into database.")
 		http.Error(w, "Failed to insert into database", http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("Received submission: Todo=%s", todo.todo)
+	log.Printf("Received submission: Todo=%s", todo.Todo)
 
 	nc, err := nats.Connect(nats_url, nats.Name("API PublishBytes"))
 	if err != nil {
@@ -186,31 +176,20 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bodyBytes, err := io.ReadAll(r.Body)
-	if err != nil {
-		log.Printf("Error reading request body: %v", err)
-		http.Error(w, "Error reading request body", http.StatusInternalServerError)
-		return
-	}
-
-	r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-
 	var todo Todo
-	err = json.Unmarshal(bodyBytes, &todo)
-	if err != nil {
-		log.Printf("Failed to decode request body: %v", err)
+	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
 		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
 		return
 	}
 
-	if todo.todo == "" {
+	if todo.Todo == "" {
 		log.Printf("Todo cannot be empty.")
 		http.Error(w, "Todo cannot be empty", http.StatusBadRequest)
 		return
 	}
 
-	if len(todo.todo) > 140 {
-		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo.todo)
+	if len(todo.Todo) > 140 {
+		log.Printf("Rejected: Todo exceeds 140 characters: %s", todo.Todo)
 		http.Error(w, "Rejected: Todo exceeds 140 characters.", http.StatusBadRequest)
 		return
 	}
@@ -219,7 +198,7 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	query := `UPDATE todos SET todo = $1, done = $2 WHERE id = $3`
-	_, err = db.Exec(query, todo.todo, todo.done, id)
+	_, err := db.Exec(query, todo.Todo, todo.Done, id)
 	if err != nil {
 		log.Printf("Failed to update the todo with ID %s, %v", id, err)
 		http.Error(w, "Failed to update the todo in the database", http.StatusInternalServerError)
