@@ -64,12 +64,13 @@
         document.getElementById('todo-form').addEventListener('submit', async function (event) {
             event.preventDefault();
             const todoInput = document.getElementById('todo');
+            const todoText = todoInput.value.trim(); 
             if (!todoInput.value.trim()) {
-                console.error("Todo cannot be empty.");
+                alert("Todo cannot be empty.");
                 return;
             }
-            const todoData = JSON.stringify({ todo: todoInput.value });
-            const response = await fetch(event.target.action, {
+            const todoData = JSON.stringify({ todo: todoText });
+            const response = await fetch('/submit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -82,12 +83,11 @@
                 todoInput.value = '';
                 fetchTodos();
             } else {
-                cconsole.error("Failed to submit todo.");
+                console.error("Failed to submit todo.");
             }
         });
 
         document.addEventListener("DOMContentLoaded", fetchTodos);
     </script>
 </body>
-
 </html>
