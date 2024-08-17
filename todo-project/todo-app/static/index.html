@@ -63,16 +63,26 @@
 
         document.getElementById('todo-form').addEventListener('submit', async function (event) {
             event.preventDefault();
-            const formData = new FormData(event.target);
-            const data = new URLSearchParams(formData);
+            const todoInput = document.getElementById('todo');
+            if (!todoInput.value.trim()) {
+                console.error("Todo cannot be empty.");
+                return;
+            }
+            const todoData = JSON.stringify({ todo: todoInput.value });
             const response = await fetch(event.target.action, {
-                method: event.target.method,
-                body: data,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: todoData
             });
+
             if (response.ok) {
+                console.log("Todo submitted successfully.");
+                todoInput.value = '';
                 fetchTodos();
             } else {
-                console.error
+                cconsole.error("Failed to submit todo.");
             }
         });
 
