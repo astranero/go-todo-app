@@ -5,6 +5,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello</title>
+    <style>
+        ul#todos {
+            list-style-type: none; /* Remove default bullets */
+            padding-left: 0;
+        }
+
+        ul#todos li {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        ul#todos li span {
+            flex-grow: 1;
+        }
+
+        ul#todos li button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        ul#todos li.completed span {
+            text-decoration: line-through;
+            color: grey;
+        }
+
+        ul#todos li.completed::before {
+            content: '✔ ';
+            color: green;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
@@ -30,17 +72,33 @@
                     ul.innerHTML = ''
                     todos.forEach(todo => {
                         const li = document.createElement('li');
-                        li.textContent = todo.Todo;
-                        li.setAttribute('id', `todo-${todo.Id}`);
-                        
-                        ul.appendChild(li);
-                        li.addEventListener("click", async function () {
+
+                        const span = document.createElement('span');
+                        span.textContent = todo.Todo;
+
+                        const button = document.createElement('button');
+                        button.textContent = 'Done';
+
+                        if (todo.Done) {
+                            li.classList.add('completed');
+                            button.disabled = true; 
+                        }
+
+                        button.addEventListener('click', async function () {
+                            todo.Done = true;
                             await disableTodo(todo);
+                            li.classList.add('completed');
+                            button.disabled = true; 
                         });
+                        li.appendChild(span);
+                        li.appendChild(button);
+
+                        li.setAttribute('id', `todo-${todo.Id}`);
+                        ul.appendChild(li);
                     });
                 }
             } else {
-                console.error("Failed to fetch todos", response.status)
+                console.error("Failed to fetch todos", response.status);
             }
         }
 
@@ -53,7 +111,7 @@
                 body: JSON.stringify({
                     ID: todo.Id,
                     Todo: todo.Todo,
-                    Done: true
+                    Done: todo.Done
                 })
             });
 
