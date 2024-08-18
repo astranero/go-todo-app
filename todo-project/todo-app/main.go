@@ -22,7 +22,7 @@ var (
 )
 
 type Todo struct {
-	ID   int    `db:"id" json:"Id,omitempty"`
+	Id   int    `db:"id" json:"Id,omitempty"`
 	Todo string `db:"todo" json:"Todo"`
 	Done bool   `db:"done" json:"Done"`
 }

@@ -23,7 +23,7 @@ var (
 const healthCheckPort = "3541"
 
 type Todo struct {
-	ID   int    `db:"id" json:"Id,omitempty"`
+	Id   int    `db:"id" json:"Id,omitempty"`
 	Todo string `db:"todo" json:"Todo"`
 	Done bool   `db:"done" json:"Done"`
 }
@@ -168,13 +168,6 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
-
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		log.Printf("Id cannot be empty.")
-		http.Error(w, "Id cannot be empty", http.StatusBadRequest)
 		return
 	}
 
