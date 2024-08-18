@@ -6,23 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello</title>
     <style>
-        ul#todos {
-            list-style-type: none;
-            padding-left: 0;
+        .completed::before {
+            content: '✔ '; 
+            color: green;
+            font-weight: bold;
         }
 
-        ul#todos li {
-            display: flex;
-            align-items: center;
-            margin: 5px 0;
-            padding: 5px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        ul#todos li input[type="checkbox"] {
-            margin-right: 10px;
+        .completed {
+            text-decoration: line-through;
+            color: grey;
         }
     </style>
 </head>
@@ -30,6 +22,7 @@
 <body>
     <h1>Hello, World!</h1>
     <p>This is a server running with golang and it was deployed with github actions..</p>
+
     <img src="/image" alt="A random picsum picture.">
     <form id="todo-form" action="/submit" method="post">
         <label for="todo"> Todo </label>
@@ -51,9 +44,15 @@
                         const li = document.createElement('li');
                         li.textContent = todo.Todo;
                         li.setAttribute('id', `todo-${todo.Id}`);
+
+                        if (todo.Done) {
+                            li.classList.add('completed');
+                        }
+
                         ul.appendChild(li);
                         li.addEventListener("click", async function () {
                             await disableTodo(todo);
+                            li.classList.toggle('completed', todo.Done);
                         });
                     });
                 }
