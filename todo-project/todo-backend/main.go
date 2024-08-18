@@ -197,9 +197,9 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	query := `UPDATE todos SET todo = $1, done = $2 WHERE id = $3`
-	_, err := db.Exec(query, todo.Todo, todo.Done, id)
+	_, err := db.Exec(query, todo.Todo, todo.Done, todo.Id)
 	if err != nil {
-		log.Printf("Failed to update the todo with ID %s, %v", id, err)
+		log.Printf("Failed to update the todo with ID %s, %v", todo.Id, err)
 		http.Error(w, "Failed to update the todo in the database", http.StatusInternalServerError)
 		return
 	}
