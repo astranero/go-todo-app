@@ -5,18 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello</title>
-    <style>
-        .completed::before {
-            content: '✔ '; 
-            color: green;
-            font-weight: bold;
-        }
-
-        .completed {
-            text-decoration: line-through;
-            color: grey;
-        }
-    </style>
 </head>
 
 <body>
@@ -44,15 +32,10 @@
                         const li = document.createElement('li');
                         li.textContent = todo.Todo;
                         li.setAttribute('id', `todo-${todo.Id}`);
-
-                        if (todo.Done) {
-                            li.classList.add('completed');
-                        }
-
+                        
                         ul.appendChild(li);
                         li.addEventListener("click", async function () {
                             await disableTodo(todo);
-                            li.classList.toggle('completed', todo.Done);
                         });
                     });
                 }
