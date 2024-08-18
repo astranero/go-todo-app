@@ -58,6 +58,7 @@
 
             if (response.ok) {
                 console.log("Todo updated")
+                fetchTodos();
             } else {
                 console.error(`Failed to update todo with ID ${todo.Id}`);
             }
