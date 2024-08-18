@@ -240,7 +240,7 @@ func HandleTodoGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var todoList []Todo
-	err := db.Select(&todoList, `SELECT * FROM todos`)
+	err := db.Select(&todoList, `SELECT * FROM todos WHERE done=false`)
 	if err != nil {
 		log.Printf("Failed to fetch todos from database.")
 		http.Error(w, "Failed to fetch todos from database.", http.StatusInternalServerError)

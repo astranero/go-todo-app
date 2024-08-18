@@ -23,17 +23,18 @@
             const response = await fetch('/todos');
             if (response.ok) {
                 const todos = await response.json();
+                console.log(todos)
                 if (Array.isArray(todos)) {
                     const ul = document.getElementById('todos');
                     ul.innerHTML = ''
                     todos.forEach(todo => {
                         const li = document.createElement('li');
-                        li.textContent = todo.todo;
-                        li.setAttribute('data-id', todo.id)
+                        li.textContent = todo.Todo;
+                        li.setAttribute('id', `todo-${todo.Id}`);
+                        ul.appendChild(li);
                         li.addEventListener("click", async function () {
                             await disableTodo(todo);
                         });
-                        ul.appendChild(li);
                     });
                 }
             } else {
@@ -42,13 +43,13 @@
         }
 
         async function disableTodo(todo) {
-            const response = await fetch(`/todos/${todo.ID}`, {
+            const response = await fetch(`/todos/${todo.Id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    ID: todo.ID,
+                    ID: todo.Id,
                     Todo: todo.Todo,
                     Done: true
                 })
