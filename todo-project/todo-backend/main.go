@@ -23,9 +23,9 @@ var (
 const healthCheckPort = "3541"
 
 type Todo struct {
-	ID   int    `db:"id" json:"id,omitempty"`
-	Todo string `db:"todo" json:"todo"`
-	Done bool   `db:"done" json:"done"`
+	ID   int    `db:"id" json:"Id,omitempty"`
+	Todo string `db:"todo" json:"Todo"`
+	Done bool   `db:"done" json:"Done"`
 }
 
 func main() {
@@ -240,7 +240,7 @@ func HandleTodoGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var todoList []Todo
-	err := db.Select(&todoList, `SELECT todo FROM todos`)
+	err := db.Select(&todoList, `SELECT * FROM todos`)
 	if err != nil {
 		log.Printf("Failed to fetch todos from database.")
 		http.Error(w, "Failed to fetch todos from database.", http.StatusInternalServerError)

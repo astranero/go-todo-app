@@ -22,9 +22,9 @@ var (
 )
 
 type Todo struct {
-	ID   int    `db:"id" json:"id,omitempty"`
-	Todo string `db:"todo" json:"todo"`
-	Done bool   `db:"done" json:"done"`
+	ID   int    `db:"id" json:"Id,omitempty"`
+	Todo string `db:"todo" json:"Todo"`
+	Done bool   `db:"done" json:"Done"`
 }
 
 func main() {
@@ -152,7 +152,7 @@ func main() {
 			return
 		}
 
-		log.Printf("Updated the submission: Todo=%s", todo)
+		log.Printf("Updated the submission: Todo=%s", todo.Todo)
 		c.Data(http.StatusOK, "application/json", todoBody)
 	})
 

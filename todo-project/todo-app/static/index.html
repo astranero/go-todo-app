@@ -28,8 +28,8 @@
                     ul.innerHTML = ''
                     todos.forEach(todo => {
                         const li = document.createElement('li');
-                        li.textContent = todo.Todo;
-                        li.setAttribute('data-id', todo.ID)
+                        li.textContent = todo.todo;
+                        li.setAttribute('data-id', todo.id)
                         li.addEventListener("click", async function () {
                             await disableTodo(todo);
                         });
