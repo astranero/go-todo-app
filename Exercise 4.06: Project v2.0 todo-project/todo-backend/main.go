@@ -20,12 +20,12 @@ var (
 	nats_url string
 )
 
-const healthCheckPort = "3451"
+const healthCheckPort = "3541"
 
 type Todo struct {
-	ID   int    `db:"id" json:"id"`
-	Todo string `db:"todo" json:"todo"`
-	Done bool   `db:"done" json:"done"`
+	Id   int    `db:"id" json:"Id,omitempty"`
+	Todo string `db:"todo" json:"Todo"`
+	Done bool   `db:"done" json:"Done"`
 }
 
 func main() {
@@ -64,24 +64,24 @@ func main() {
 		log.Fatalf("Failed to create todo table: %v", err)
 	}
 
-    todoMux := http.NewServeMux()
-    todoMux.HandleFunc("/", todosHandler)
+	todoMux := http.NewServeMux()
+	todoMux.HandleFunc("/", todosHandler)
 
-    healthMux := http.NewServeMux()
-    healthMux.HandleFunc("/healthz", health)
+	healthMux := http.NewServeMux()
+	healthMux.HandleFunc("/healthz", health)
 
-    go func() {
-        log.Printf("Server started on port %s", port)
-        if err := http.ListenAndServe(":"+port, todoMux); err != nil {
-            log.Fatalf("Failed to start server: %v", err)
-        }
-    }()
+	go func() {
+		log.Printf("Server started on port %s", port)
+		if err := http.ListenAndServe(":"+port, todoMux); err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
 
-    go func() {
-        if err := http.ListenAndServe(":"+healthCheckPort, healthMux); err != nil {
-            log.Fatalf("Failed to start healthz endpoint: %v", err)
-        }
-    }()
+	go func() {
+		if err := http.ListenAndServe(":"+healthCheckPort, healthMux); err != nil {
+			log.Fatalf("Failed to start healthz endpoint: %v", err)
+		}
+	}()
 
 	select {}
 }
@@ -94,8 +94,7 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 
 	var todo Todo
 	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
-		log.Printf("Error decoding todo: %v", err)
-		http.Error(w, "Invalid todo format", http.StatusBadRequest)
+		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
 		return
 	}
 
@@ -103,6 +102,10 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Todo cannot be empty.")
 		http.Error(w, "Todo cannot be empty", http.StatusBadRequest)
 		return
+	}
+
+	if !todo.Done {
+		todo.Done = false
 	}
 
 	if len(todo.Todo) > 140 {
@@ -126,14 +129,16 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 
 	nc, err := nats.Connect(nats_url, nats.Name("API PublishBytes"))
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to connect to nats", http.StatusInternalServerError)
 	}
+
 	defer nc.Close()
 
 	msg := map[string]string{
 		"user":    "bot",
 		"message": "A todo was created.",
 	}
+
 	msgBytes, err := json.Marshal(msg)
 	if err != nil {
 		log.Printf("Failed to marshal message: %v", err)
@@ -141,7 +146,7 @@ func HandleTodoPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := nc.Publish("todos", msgBytes); err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to publish todos to nc", http.StatusInternalServerError)
 		return
 	}
 
@@ -166,17 +171,8 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		log.Printf("Id cannot be empty.")
-		http.Error(w, "Id cannot be empty", http.StatusBadRequest)
-		return
-	}
-
 	var todo Todo
-	err := json.NewDecoder(r.Body).Decode(&todo)
-	if err != nil {
-		log.Printf("Failed to decode request body: %v", err)
+	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
 		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
 		return
 	}
@@ -185,6 +181,10 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Todo cannot be empty.")
 		http.Error(w, "Todo cannot be empty", http.StatusBadRequest)
 		return
+	}
+
+	if !todo.Done {
+		todo.Done = false
 	}
 
 	if len(todo.Todo) > 140 {
@@ -197,16 +197,16 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 	defer mutex.Unlock()
 
 	query := `UPDATE todos SET todo = $1, done = $2 WHERE id = $3`
-	_, err = db.Exec(query, todo.Todo, todo.Done, id)
+	_, err := db.Exec(query, todo.Todo, todo.Done, todo.Id)
 	if err != nil {
-		log.Printf("Failed to update the todo with ID %s, %v", id, err)
+		log.Printf("Failed to update the todo with ID %s, %v", todo.Id, err)
 		http.Error(w, "Failed to update the todo in the database", http.StatusInternalServerError)
 		return
 	}
 
 	nc, err := nats.Connect(nats_url, nats.Name("API PublishBytes"))
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to connect to nats", http.StatusInternalServerError)
 	}
 
 	msg := map[string]string{
@@ -220,7 +220,7 @@ func HandleTodoPut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := nc.Publish("todos", msgBytes); err != nil {
-		log.Fatal(err)
+		http.Error(w, "Failed to publish to nats", http.StatusInternalServerError)
 		return
 	}
 
@@ -233,11 +233,11 @@ func HandleTodoGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var todoList []Todo
-	err := db.Select(&todoList, `SELECT todo FROM todos`)
+	err := db.Select(&todoList, `SELECT * FROM todos WHERE done=false`)
 	if err != nil {
 		log.Printf("Failed to fetch todos from database.")
 		http.Error(w, "Failed to fetch todos from database.", http.StatusInternalServerError)
-		return
+		todoList = []Todo{}
 	}
 
 	if err := json.NewEncoder(w).Encode(todoList); err != nil {

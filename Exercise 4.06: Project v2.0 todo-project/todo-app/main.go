@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -19,8 +21,13 @@ var (
 	mutex sync.Mutex
 )
 
-func main() {
+type Todo struct {
+	Id   int    `db:"id" json:"Id,omitempty"`
+	Todo string `db:"todo" json:"Todo"`
+	Done bool   `db:"done" json:"Done"`
+}
 
+func main() {
 	router := gin.Default()
 
 	err := godotenv.Load(".env")
@@ -65,23 +72,34 @@ func main() {
 	})
 
 	router.POST("/submit", func(c *gin.Context) {
-		todo := c.PostForm("todo")
+		var todo Todo
+		if err := c.ShouldBindJSON(&todo); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todo format"})
+			return
+		}
 
-		if todo == "" {
-			log.Printf("Todo cannot be empty.")
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Todo cannot be empty"})
+		todoJSON, err := json.Marshal(todo)
+		if err != nil {
+			log.Printf("Error marshalling todo to JSON: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error preparing request data"})
 			return
 		}
 
 		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
-		resp, err := http.Post(requestURL, "application/x-www-form-urlencoded", strings.NewReader(fmt.Sprintf("todo=%s", todo)))
-		if resp.StatusCode != http.StatusOK {
+		resp, err := http.Post(requestURL, "application/json", bytes.NewBuffer((todoJSON)))
+		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to process your request"})
 			return
 		}
 
 		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("Non-OK HTTP status: %d", resp.StatusCode)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Backend responded with error"})
+			return
+		}
 
 		todoBody, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -90,16 +108,14 @@ func main() {
 			return
 		}
 
-		log.Printf("Received submission: Todo=%s", todo)
+		log.Printf("Received submission: Todo=%s", todo.Todo)
 		c.Data(http.StatusOK, "application/json", todoBody)
 	})
 
 	router.PUT("/todos/:id", func(c *gin.Context) {
-		todo := c.PostForm("todo")
-
-		if todo == "" {
-			log.Printf("Todo cannot be empty.")
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Todo cannot be empty"})
+		var todo Todo
+		if err := c.ShouldBindJSON(&todo); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid todo format"})
 			return
 		}
 
@@ -110,16 +126,24 @@ func main() {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error creating request: %v", err)})
 			return
 		}
+
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
-		if resp.StatusCode != http.StatusOK {
+		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
 			return
 		}
+
 		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			log.Printf("HTTP status: %d", resp.StatusCode)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
+			return
+		}
 
 		todoBody, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -128,18 +152,19 @@ func main() {
 			return
 		}
 
-		log.Printf("Updated the submission: Todo=%s", todo)
+		log.Printf("Updated the submission: Todo=%s", todo.Todo)
 		c.Data(http.StatusOK, "application/json", todoBody)
 	})
 
 	router.GET("/todos", func(c *gin.Context) {
 		requestURL := fmt.Sprintf("http://todo-backend:%s", backendPort)
 		resp, err := http.Get(requestURL)
-		if resp.StatusCode != http.StatusOK {
+		if err != nil {
 			log.Printf("Error sending request to %s: %v", requestURL, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error sending request: %v", err)})
 			return
 		}
+
 		defer resp.Body.Close()
 
 		todoBody, err := io.ReadAll(resp.Body)
@@ -152,8 +177,10 @@ func main() {
 		c.Data(http.StatusOK, "application/json", todoBody)
 	})
 
+	router.StaticFile("/home", "./static/index.html")
+
 	router.GET("/", func(c *gin.Context) {
-		c.File("./static/index.html")
+		c.JSON(http.StatusOK, gin.H{"message": "Welcome to the Todo App!"})
 	})
 
 	log.Printf("Server started on port %s", port)
