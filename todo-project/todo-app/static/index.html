@@ -44,7 +44,7 @@
         }
 
         async function disableTodo(todo) {
-            const response = await fetch(`/todos/todo-${todo.Id}`, {
+            const response = await fetch(`/todos/${todo.Id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -59,7 +59,7 @@
             if (response.ok) {
                 console.log("Todo updated")
             } else {
-                console.error(`Failed to update todo with ID ${todo.ID}`);
+                console.error(`Failed to update todo with ID ${todo.Id}`);
             }
         };
 
