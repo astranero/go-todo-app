@@ -5,6 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello</title>
+    <style>
+        ul#todos {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul#todos li {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        ul#todos li input[type="checkbox"] {
+            margin-right: 10px;
+        }
+    </style>
 </head>
 
 <body>
@@ -29,22 +49,9 @@
                     ul.innerHTML = ''
                     todos.forEach(todo => {
                         const li = document.createElement('li');
-
-                        const checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.checked = todo.Done;
-
-                        checkbox.addEventListener('change', async function () {
-                            todo.Done = checkbox.checked;
-                            await disableTodo(todo);
-                        });
-
-                        li.appendChild(checkbox);
-                        li.appendChild(document.createTextNode(todo.Todo));
-
+                        li.textContent = todo.Todo;
                         li.setAttribute('id', `todo-${todo.Id}`);
                         ul.appendChild(li);
-
                         li.addEventListener("click", async function () {
                             await disableTodo(todo);
                         });
@@ -79,7 +86,7 @@
         document.getElementById('todo-form').addEventListener('submit', async function (event) {
             event.preventDefault();
             const todoInput = document.getElementById('todo');
-            const todoText = todoInput.value.trim();
+            const todoText = todoInput.value.trim(); 
             if (!todoInput.value.trim()) {
                 alert("Todo cannot be empty.");
                 return;
@@ -105,5 +112,4 @@
         document.addEventListener("DOMContentLoaded", fetchTodos);
     </script>
 </body>
-
 </html>
