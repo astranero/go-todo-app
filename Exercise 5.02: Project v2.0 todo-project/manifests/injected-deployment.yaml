@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled
+      labels:
+        app: todo
+    spec:
+      containers:
+      - env:
+        - name: GO_PORT
+          value: "8080"
+        - name: IMAGE_URL
+          value: https://picsum.photos/1200
+        - name: IMAGE_PATH
+          value: /usr/src/shared/files/picsum.png
+        image: todo-app
+        imagePullPolicy: Always
+        name: todo-app
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: 10m
+            memory: 20Mi
+        volumeMounts:
+        - mountPath: /usr/src/shared/files
+          name: persistent
+      - env:
+        - name: BACK_PORT
+          value: "8081"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              key: DATABASE_URL
+              name: todo-postgres-secret
+        - name: NATS_URL
+          value: nats://my-nats.default.svc.cluster.local:4222
+        image: todo-backend
+        imagePullPolicy: Always
+        name: todo-backend
+        ports:
+        - containerPort: 8081
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 3541
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          limits:
+            cpu: 10m
+            memory: 20Mi
+      - env:
+        - name: NATS_URL
+          value: nats://my-nats.default.svc.cluster.local:4222
+        - name: DISCORD_URL
+          value: https://discord.com/api/webhooks/1272216427230924950/PwMo1VfloOWfUk33xrfqGLrulFqQubTPi_wg8hR2KERUUDp4bc7VeDotPMYJjoxNP3d5
+        image: todo-broadcaster
+        imagePullPolicy: Always
+        name: todo-broadcaster
+      volumes:
+      - name: persistent
+        persistentVolumeClaim:
+          claimName: todo-pvc
+---

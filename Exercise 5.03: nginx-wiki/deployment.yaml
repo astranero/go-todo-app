@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-wikipedia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      apps: nginx
+  template:
+    metadata:
+      labels:
+        apps: nginx
+    spec:
+      initContainers:
+        - name: wikipull
+          image: alpine
+          command:
+            [
+              "sh",
+              "-c",
+              "apk add --no-cache curl && curl -o /usr/share/nginx/html/index.html https://en.wikipedia.org/wiki/Kubernetes",
+            ]
+          volumeMounts:
+            - name: www
+              mountPath: /usr/share/nginx/html/
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: www
+              mountPath: /usr/share/nginx/html/
+        - name: sidecar
+          image: alpine
+          command:
+            [
+              "sh",
+              "-c",
+              "apk add --no-cache curl && sleep $((5 + RANDOM % 10))m && curl -o /usr/share/nginx/html/index.html https://en.wikipedia.org/wiki/Special:Random",
+            ]
+          env:
+            - name: RANDOM
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+          volumeMounts:
+            - name: www
+              mountPath: /usr/share/nginx/html/
+      volumes:
+        - name: www
+          emptyDir: {}
