@@ -22,7 +22,7 @@ Including monitoring GPUs
 8. Minio for storing various backups including velero backups.
 9. Velero for backing up deployments
 10. Longhorn as our storage solution
-11. Containerd for creating containers, namespace creating etc.
+11. Containerd for container management, namespace, process creation etc.
 12. CoreDNS to handle k8s pods name to IP addr. translation
 13. etcd to handle state of the cluster
 14. Linkerd in this course to do canary release, which depends on envoy.
