@@ -11,7 +11,7 @@ In contrast, a Database as a Service (DBaaS) solution is much simpler in most ca
 DBaaS solutions are usually ready to use, allowing you to quickly start with the specific requirements you need. Providers specializing in DBaaS invest substantial resources into developing robust security, backup, and other essential services for databases. Consequently, these solutions often offer a level of reliability and security that is difficult to achieve with a DIY approach.
 
 ## Exercise 5.08
-![Landscape](Exercise 5.08.png)
+![Exercise 5.08.png]
 1. I used Flannel as the CNI (Container Network Interface) with k3d.
 2. I have used Prometheus and Grafana for multiple purposes, including setting up a system at work with Thanos and other tools to monitor a multi-cluster solution, which includes monitoring GPUs.
 3. I have configured Nginx as a proxy to forward requests to different API endpoints.
@@ -35,8 +35,7 @@ DBaaS solutions are usually ready to use, allowing you to quickly start with the
 21. I have used ArgoCD to automate repository pulls to the cluster in a GitOps manner.
 
 
-## Exercise 5.05: Platform comparison
-Rancer vs OpenShift
+## Exercise 5.05: Platform comparison - Rancer vs OpenShift
 
 - Rancer offers an intuitive dashboard where users can easily install and manage applications for their cluster.
 - OpenShift has a more complex interface with built-in development tools that facilitate testing and debugging.
