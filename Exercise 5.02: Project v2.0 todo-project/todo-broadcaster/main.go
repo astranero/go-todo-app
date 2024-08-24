@@ -43,28 +43,26 @@ func main() {
 			return
 		}
 
-		log.Println("Message from NC: \n %s", string(payloadBytes))
-
 		req, err := http.NewRequest("POST", discordURL, bytes.NewBuffer(payloadBytes))
 		if err != nil {
 			log.Printf("Error creating request: %v", err)
+			return
 		}
-
 		req.Header.Set("Content-Type", "application/json")
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Printf("Error sending request to Discord: %v", err)
+			return
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
 			log.Printf("Discord server error: %d", resp.StatusCode)
-		} else {
-			log.Println("Message successfully sent to Discord")
+			return
 		}
-
+		log.Println("Message successfully sent to Discord")
 	})
 
 	if err != nil {

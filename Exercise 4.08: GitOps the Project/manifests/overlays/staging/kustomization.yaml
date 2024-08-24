@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ./../../base
+- secret.yaml
+namePrefix: staging-
+
+images:
+- name: todo-app
+  newName: gcr.io/gke-dwe/todo-app
+  newTag: main-596e79ceeecaa61f04b920146d50a973f0717e5c
+- name: todo-backend
+  newName: gcr.io/gke-dwe/todo-backend
+  newTag: main-596e79ceeecaa61f04b920146d50a973f0717e5c
+- name: todo-broadcaster
+  newName: gcr.io/gke-dwe/todo-broadcaster
+  newTag: main-596e79ceeecaa61f04b920146d50a973f0717e5c
