@@ -1,5 +1,9 @@
 # Hello Kubernetes
 
+## CI/CD Exercises / Sub GitHubs
+https://github.com/astranero/gitops-the-project
+https://github.com/astranero/pingpong-GitOps-the-project
+
 ## Exercise 3.06: DBaaS vs DIY
 
  do-it-yourself (DIY) solution is appropriate when a specific database platform tailored to unique requirements is necessary. It’s ideal for situations where you have your own physical servers, which provide greater control over database design and configurations. However, this freedom comes with added complexity, as the database must be maintained and updated regularly.
